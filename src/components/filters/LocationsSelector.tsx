@@ -1,0 +1,398 @@
+import { spotterBrand } from "@/theme";
+import { ArrowBack, LocationOn } from "@mui/icons-material";
+import {
+  Box,
+  Chip,
+  Container,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Popover,
+  TextField,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import { useState } from "react";
+
+export interface Location {
+  code: string;
+  name: string;
+  city: string;
+  country: string;
+}
+
+interface LocationSelectorProps {
+  value: Location | null;
+  onChange: (location: Location | null) => void;
+  placeholder: string;
+  icon: React.ReactNode;
+  ariaLabel?: string;
+}
+
+// Sample airport data - you would replace this with real data
+const SAMPLE_AIRPORTS: Location[] = [
+  {
+    code: "LOS",
+    name: "Murtala Muhammed International Airport",
+    city: "Lagos",
+    country: "Nigeria",
+  },
+  {
+    code: "ABV",
+    name: "Nnamdi Azikiwe International Airport",
+    city: "Abuja",
+    country: "Nigeria",
+  },
+  {
+    code: "LIS",
+    name: "Humberto Delgado Airport",
+    city: "Lisbon",
+    country: "Portugal",
+  },
+  {
+    code: "OPO",
+    name: "Francisco Sá Carneiro Airport",
+    city: "Porto",
+    country: "Portugal",
+  },
+  {
+    code: "LHR",
+    name: "Heathrow Airport",
+    city: "London",
+    country: "United Kingdom",
+  },
+  {
+    code: "CDG",
+    name: "Charles de Gaulle Airport",
+    city: "Paris",
+    country: "France",
+  },
+  {
+    code: "JFK",
+    name: "John F. Kennedy International Airport",
+    city: "New York",
+    country: "United States",
+  },
+  {
+    code: "DXB",
+    name: "Dubai International Airport",
+    city: "Dubai",
+    country: "United Arab Emirates",
+  },
+];
+
+export function LocationSelector({
+  value,
+  onChange,
+  placeholder,
+  icon,
+  ariaLabel = "Select location",
+}: LocationSelectorProps) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const open = Boolean(anchorEl);
+  const isMobile = useMediaQuery("(max-width:600px)");
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setSearchQuery("");
+  };
+
+  const handleLocationSelect = (location: Location) => {
+    onChange(location);
+    handleClose();
+  };
+
+  const filteredAirports = SAMPLE_AIRPORTS.filter(
+    (airport) =>
+      airport.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      airport.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      airport.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      airport.country.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const getDisplayValue = () => {
+    if (value) {
+      return value.city;
+    }
+    return "";
+  };
+
+  return (
+    <>
+      <FormControl sx={{ flex: 1 }}>
+        <TextField
+          value={getDisplayValue()}
+          placeholder={placeholder}
+          onClick={handleClick}
+          InputProps={{
+            startAdornment: isMobile ? null : (
+              <InputAdornment position="start">{icon}</InputAdornment>
+            ),
+          }}
+          inputProps={{ "aria-label": ariaLabel }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              paddingLeft: isMobile ? "0" : "1.5rem",
+              cursor: "pointer",
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+              backgroundColor: "transparent",
+              "&:hover": {
+                borderColor: "primary.main",
+              },
+              "&.Mui-focused": {
+                borderColor: "primary.main",
+                // backgroundColor: "background.paper",
+              },
+            },
+            "& .MuiOutlinedInput-notchedOutline": {
+              border: "none",
+            },
+            "& .MuiInputBase-input": {
+              fontSize: "1rem",
+              fontWeight: "500",
+              padding: isMobile ? "0.5rem 1rem" : "0.875rem 0.875rem",
+              cursor: "pointer",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              minHeight: isMobile ? "2rem" : "",
+              color: value ? "text.primary" : "text.secondary",
+            },
+          }}
+        />
+      </FormControl>
+
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        PaperProps={{
+          sx: isMobile
+            ? {
+                position: "fixed",
+                top: "0 !important",
+                left: "0 !important",
+                right: 0,
+                bottom: 0,
+                maxWidth: "100vw !important",
+                maxHeight: "100vh !important",
+                width: "100vw",
+                height: "100vh",
+                borderRadius: 0,
+                margin: 0,
+              }
+            : {
+                mt: 1,
+                minWidth: 400,
+                maxWidth: 500,
+                borderRadius: 1,
+                boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+              },
+        }}
+        slotProps={{
+          backdrop: {
+            sx: isMobile
+              ? {
+                  backgroundColor: "transparent",
+                }
+              : undefined,
+          },
+        }}
+      >
+        <Box
+          sx={
+            isMobile
+              ? {
+                  height: "100vh",
+                  display: "flex",
+                  flexDirection: "column",
+                  backgroundColor: "background.paper",
+                }
+              : {}
+          }
+        >
+          {isMobile && (
+            <Container
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                // p: 2,
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                minHeight: "3.5rem",
+              }}
+            >
+              <IconButton onClick={handleClose} sx={{ mr: 2, pl: 0 }}>
+                <ArrowBack />
+              </IconButton>
+
+              <TextField
+                fullWidth
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Where ${placeholder}`}
+                autoFocus
+                variant={isMobile ? "standard" : "outlined"}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+
+                  "& .MuiInput-input": {
+                    fontSize: "0.875rem",
+                    fontWeight: "medium",
+                    padding: isMobile ? "12px 0" : undefined,
+                  },
+                  "& .MuiInput-root::before": {
+                    borderBottom: "0 !important",
+                  },
+                  "& .MuiInput-root::after": {
+                    borderBottom: "0 !important",
+                  },
+                }}
+              />
+            </Container>
+          )}
+
+          <Box
+            sx={
+              isMobile
+                ? { px: 2, flex: 1, display: "flex", flexDirection: "column" }
+                : { p: 0 }
+            }
+          >
+            {!isMobile && (
+              <TextField
+                fullWidth
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Where ${placeholder}`}
+                autoFocus
+                InputProps={{
+                  startAdornment: isMobile ? null : (
+                    <InputAdornment
+                      position="start"
+                      style={{ marginRight: 16 }}
+                    >
+                      {icon}
+                    </InputAdornment>
+                  ),
+                }}
+                variant={"standard"}
+                sx={{
+                  "& .MuiInput-root": {
+                    padding: "0.75rem 1rem",
+                    fontSize: "0.875rem",
+                    fontWeight: "medium",
+                  },
+                  "& .MuiInput-root::before": {
+                    borderBottomColor: "text.disabled",
+                  },
+                  "& .MuiInput-root::before:focus": {
+                    borderBottomColor: "text.disabled",
+                  },
+                  "& .MuiInput-root::after": {
+                    borderBottomColor: "text.disabled",
+                  },
+                }}
+              />
+            )}
+
+            <List
+              sx={{
+                maxHeight: isMobile ? "none" : 300,
+                overflow: "auto",
+                flex: isMobile ? 1 : "none",
+                px: 0,
+
+                "&.MuiList-root ": {
+                  paddingTop: "0.3125rem",
+                  paddingBottom: "0.5rem",
+                },
+              }}
+            >
+              {filteredAirports.map((airport) => (
+                <ListItem
+                  key={airport.code}
+                  onClick={() => handleLocationSelect(airport)}
+                  sx={{
+                    cursor: "pointer",
+                    // borderRadius: isMobile ? 0 : 1,
+                    py: 0,
+                    px: isMobile ? 0 : 2,
+                    "&:hover": {
+                      backgroundColor: "text.primaryChannel",
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <LocationOn sx={{ color: "text.secondary" }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography
+                          variant="body1"
+                          component="span"
+                          sx={{
+                            fontSize: isMobile ? "1rem" : "0.875rem",
+                            fontWeight: "medium",
+                          }}
+                        >
+                          {airport.city}
+                        </Typography>
+                        <Chip
+                          label={airport.code}
+                          size="small"
+                          sx={{
+                            backgroundColor: spotterBrand.teal[100],
+                            color: "primary.main",
+                            fontSize: "0.75rem",
+                            fontWeight: "bold",
+                            height: isMobile ? 24 : 20,
+                          }}
+                        />
+                      </Box>
+                    }
+                    secondary={
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          fontSize: "0.75rem",
+                          mt: 0.5,
+                        }}
+                      >
+                        {airport.name}, {airport.country}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Box>
+      </Popover>
+    </>
+  );
+}
