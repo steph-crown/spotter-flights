@@ -4,42 +4,19 @@ import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import "./App.css";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { Provider } from "react-redux";
+import { store } from "@/store/store";
 
 function App() {
-  // const { mode, setMode } = useColorScheme();
-  // if (!mode) {
-  //   return null;
-  // }
-
   return (
     <ErrorBoundary>
-      <ThemeProvider theme={theme}>
-        {/* <Button
-        onClick={() => {
-          setMode("light");∏
-        }}
-        variant="contained"
-      >
-        Light
-      </Button>
-      <Button
-        onClick={() => {
-          setMode("system");
-        }}
-      >
-        System
-      </Button>
-      <Button
-        onClick={() => {
-          setMode("dark");
-        }}
-      >
-        Dark
-      </Button> */}
-        <CssBaseline enableColorScheme />
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline enableColorScheme />
 
-        <AppRouter />
-      </ThemeProvider>
+          <AppRouter />
+        </ThemeProvider>
+      </Provider>
     </ErrorBoundary>
   );
 }

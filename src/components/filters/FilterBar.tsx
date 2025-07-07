@@ -13,16 +13,16 @@ import {
   Search,
   SwapHoriz,
 } from "@mui/icons-material";
+import type { SelectChangeEvent } from "@mui/material";
 import {
   Box,
   Button,
   IconButton,
   Paper,
+  Stack,
   useColorScheme,
   useMediaQuery,
-  Stack,
 } from "@mui/material";
-import type { SelectChangeEvent } from "@mui/material";
 import { useState } from "react";
 
 export function FilterBar() {
