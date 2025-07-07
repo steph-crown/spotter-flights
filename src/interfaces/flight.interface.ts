@@ -47,22 +47,16 @@ export interface IPassengerCounts {
 }
 
 export interface IFlightSearchState {
-  // Trip details
-  tripType: "round_trip" | "one_way" | "multi_city";
-  classType: "economy" | "premium_economy" | "business" | "first";
-
-  // Passengers
+  tripType: TripType;
+  classType: ClassType;
   passengers: IPassengerCounts;
 
-  // ILocations
   origin: ILocation | null;
   destination: ILocation | null;
 
-  // Dates
-  departureDate: string | null; // ISO string format
-  returnDate: string | null; // ISO string format
+  departureDate: string | null;
+  returnDate: string | null;
 
-  // UI state
   isSearching: boolean;
   lastSearchParams: IFlightSearchParams | null;
 }
@@ -76,3 +70,31 @@ export interface IFlightSearchParams {
   departureDate: string | null;
   returnDate: string | null;
 }
+
+export interface IFlightSearchFilters {
+  tripType: TripType;
+  classType: ClassType;
+  passengers: {
+    adults: number;
+    children: number;
+    infantsInSeat: number;
+    infantsOnLap: number;
+  };
+  origin: {
+    code: string;
+    city: string;
+    skyId: string;
+    entityId: string;
+  } | null;
+  destination: {
+    code: string;
+    city: string;
+    skyId: string;
+    entityId: string;
+  } | null;
+  departureDate: string | null;
+  returnDate: string | null;
+}
+
+export type TripType = "round_trip" | "one_way";
+export type ClassType = "economy" | "premium_economy" | "business" | "first";

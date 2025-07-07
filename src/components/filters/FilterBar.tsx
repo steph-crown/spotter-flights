@@ -3,10 +3,28 @@ import {
   FilterSelect,
   LocationSelector,
   PassengerSelector,
-  type Location,
-  type PassengerCounts,
 } from "@/components/filters";
 import { CLASS_OPTIONS, TRIP_OPTIONS } from "@/constants/filter.constants";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useUrlSync } from "@/hooks/useUrlSync";
+import type {
+  ClassType,
+  ILocation,
+  IPassengerCounts,
+  TripType,
+} from "@/interfaces/flight.interface";
+import {
+  setClassType,
+  setDepartureDate,
+  setDestination,
+  setLastSearchParams,
+  setOrigin,
+  setPassengers,
+  setReturnDate,
+  setSearching,
+  setTripType,
+  swapLocations,
+} from "@/store/slices/flightSearch.slice";
 import {
   FlightLand,
   FlightTakeoff,
@@ -23,24 +41,15 @@ import {
   useColorScheme,
   useMediaQuery,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect } from "react";
 
 export function FilterBar() {
-  const [origin, setOrigin] = useState<Location | null>(null);
-  const [destination, setDestination] = useState<Location | null>(null);
-  const [departureDate, setDepartureDate] = useState<Date | null>(null);
-  const [returnDate, setReturnDate] = useState<Date | null>(null);
+  const dispatch = useAppDispatch();
+  const flightSearch = useAppSelector((state) => state.flightSearch);
+  const { updateUrlFromState } = useUrlSync();
 
   const isMobile = useMediaQuery("(max-width:600px)");
   const { mode } = useColorScheme();
-  const [tripType, setTripType] = useState("round_trip");
-  const [classType, setClassType] = useState("economy");
-  const [passengers, setPassengers] = useState<PassengerCounts>({
-    adults: 1,
-    children: 2,
-    infantsInSeat: 0,
-    infantsOnLap: 0,
-  });
 
   const paperDesktopSx = {
     padding: "1rem",
@@ -69,39 +78,95 @@ export function FilterBar() {
         : "0 2px 2px 0 rgba(0,0,0,.3),0 2px 6px -6px rgba(0,0,0,.15)",
   };
 
+  // Update URL whenever state changes
+  useEffect(() => {
+    updateUrlFromState();
+  }, [
+    flightSearch.tripType,
+    flightSearch.classType,
+    flightSearch.passengers,
+    flightSearch.origin,
+    flightSearch.destination,
+    flightSearch.departureDate,
+    flightSearch.returnDate,
+    updateUrlFromState,
+  ]);
+
   const handleTripTypeChange = (event: SelectChangeEvent) => {
-    setTripType(event.target.value);
+    dispatch(setTripType(event.target.value as TripType));
   };
 
   const handleClassTypeChange = (event: SelectChangeEvent) => {
-    setClassType(event.target.value);
+    dispatch(setClassType(event.target.value as ClassType));
   };
 
-  const handlePassengerChange = (newPassengers: PassengerCounts) => {
-    setPassengers(newPassengers);
+  const handlePassengerChange = (newPassengers: IPassengerCounts) => {
+    dispatch(setPassengers(newPassengers));
   };
 
-  const handleOriginChange = (location: Location | null) => {
-    setOrigin(location);
+  const handleOriginChange = (location: ILocation | null) => {
+    dispatch(setOrigin(location));
   };
 
-  const handleDestinationChange = (location: Location | null) => {
-    setDestination(location);
+  const handleDestinationChange = (location: ILocation | null) => {
+    dispatch(setDestination(location));
   };
 
   const handleDepartureDateChange = (date: Date | null) => {
-    setDepartureDate(date);
+    dispatch(setDepartureDate(date ? date.toISOString() : null));
   };
 
   const handleReturnDateChange = (date: Date | null) => {
-    setReturnDate(date);
+    dispatch(setReturnDate(date ? date.toISOString() : null));
   };
 
-  const swapLocations = () => {
-    const temp = origin;
-    setOrigin(destination);
-    setDestination(temp);
+  const handleSwapLocations = () => {
+    dispatch(swapLocations());
   };
+
+  const handleSearch = () => {
+    // Validate required fields
+    if (
+      !flightSearch.origin ||
+      !flightSearch.destination ||
+      !flightSearch.departureDate
+    ) {
+      // You can add toast notification here
+      console.warn("Please fill in all required fields");
+      return;
+    }
+
+    // Set searching state and save search params
+    dispatch(setSearching(true));
+    dispatch(
+      setLastSearchParams({
+        tripType: flightSearch.tripType,
+        classType: flightSearch.classType,
+        passengers: flightSearch.passengers,
+        origin: flightSearch.origin,
+        destination: flightSearch.destination,
+        departureDate: flightSearch.departureDate,
+        returnDate: flightSearch.returnDate,
+      })
+    );
+
+    // Here you would typically navigate to results page or trigger search
+    // For now, we'll just log the search
+    console.log("Searching with params:", flightSearch);
+
+    // Reset searching state after a delay (simulate API call)
+    setTimeout(() => {
+      dispatch(setSearching(false));
+    }, 1000);
+  };
+
+  // Convert state dates back to Date objects for components
+  const departureDate = flightSearch.departureDate
+    ? new Date(flightSearch.departureDate)
+    : null;
+  const returnDate = flightSearch.returnDate
+    ? new Date(flightSearch.returnDate)
+    : null;
 
   return (
     <Paper
@@ -113,19 +178,19 @@ export function FilterBar() {
       <Stack spacing={2}>
         <Box display="flex" alignItems="center" gap={1}>
           <FilterSelect
-            value={tripType}
+            value={flightSearch.tripType}
             onChange={handleTripTypeChange}
             options={TRIP_OPTIONS}
             icon={<SwapHoriz sx={{ color: "text.secondary" }} />}
             ariaLabel="Select trip type"
           />
           <PassengerSelector
-            value={passengers}
+            value={flightSearch.passengers}
             onChange={handlePassengerChange}
             ariaLabel="Select passengers"
           />
           <FilterSelect
-            value={classType}
+            value={flightSearch.classType}
             onChange={handleClassTypeChange}
             options={CLASS_OPTIONS}
             icon={null}
@@ -142,19 +207,19 @@ export function FilterBar() {
         >
           <Box display={"flex"} alignItems={"center"}>
             <LocationSelector
-              value={origin}
+              value={flightSearch.origin}
               onChange={handleOriginChange}
               placeholder="From"
               icon={<FlightTakeoff sx={{ color: "text.secondary" }} />}
               ariaLabel="Select origin"
             />
 
-            <IconButton onClick={swapLocations}>
+            <IconButton onClick={handleSwapLocations}>
               <SwapHoriz sx={{ color: "text.secondary" }} />
             </IconButton>
 
             <LocationSelector
-              value={destination}
+              value={flightSearch.destination}
               onChange={handleDestinationChange}
               placeholder="To"
               icon={<FlightLand sx={{ color: "text.secondary" }} />}
@@ -167,7 +232,7 @@ export function FilterBar() {
             returnDate={returnDate}
             onDepartureDateChange={handleDepartureDateChange}
             onReturnDateChange={handleReturnDateChange}
-            tripType={tripType}
+            tripType={flightSearch.tripType}
             ariaLabel="Select dates"
           />
         </Box>
@@ -176,6 +241,8 @@ export function FilterBar() {
           variant="contained"
           size="large"
           startIcon={<Search />}
+          onClick={handleSearch}
+          disabled={flightSearch.isSearching}
           sx={{
             px: 2.25,
             py: 1,
@@ -188,9 +255,8 @@ export function FilterBar() {
             transform: "translateX(-50%)",
           }}
         >
-          Explore
+          {flightSearch.isSearching ? "Searching..." : "Explore"}
         </Button>
-        {/* </Box> */}
       </Stack>
     </Paper>
   );

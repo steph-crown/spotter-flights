@@ -6,8 +6,8 @@ export const flightService = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "https://sky-scrapper.p.rapidapi.com/api/v1/flights/",
     prepareHeaders: (headers) => {
-      headers.set("X-RapidAPI-Key", process.env.REACT_APP_RAPIDAPI_KEY || "");
-      headers.set("X-RapidAPI-Host", "sky-scrapper.p.rapidapi.com");
+      headers.set("X-RapidAPI-Key", import.meta.env.VITE_RAPIDAPI_KEY || "");
+      headers.set("X-RapidAPI-Host", import.meta.env.VITE_RAPIDAPI_HOST);
       return headers;
     },
   }),

@@ -1,3 +1,4 @@
+import type { IPassengerCounts } from "@/interfaces/flight.interface";
 import { spotterBrand } from "@/theme";
 import { Add, PersonOutlineOutlined, Remove } from "@mui/icons-material";
 import {
@@ -14,16 +15,9 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-export interface PassengerCounts {
-  adults: number;
-  children: number;
-  infantsInSeat: number;
-  infantsOnLap: number;
-}
-
 interface PassengerSelectorProps {
-  value: PassengerCounts;
-  onChange: (passengers: PassengerCounts) => void;
+  value: IPassengerCounts;
+  onChange: (passengers: IPassengerCounts) => void;
   ariaLabel?: string;
 }
 
@@ -43,7 +37,7 @@ export function PassengerSelector({
     setAnchorEl(null);
   };
 
-  const updateCount = (type: keyof PassengerCounts, increment: boolean) => {
+  const updateCount = (type: keyof IPassengerCounts, increment: boolean) => {
     const newValue = { ...value };
     if (increment) {
       newValue[type]++;

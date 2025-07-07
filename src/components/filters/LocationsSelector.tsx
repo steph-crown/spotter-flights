@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useMemo } from "react";
 import { spotterBrand } from "@/theme";
 import { ArrowBack, LocationOn } from "@mui/icons-material";
 import {
@@ -15,75 +16,19 @@ import {
   TextField,
   Typography,
   useMediaQuery,
+  CircularProgress,
 } from "@mui/material";
-import { useState } from "react";
-
-export interface Location {
-  code: string;
-  name: string;
-  city: string;
-  country: string;
-}
+import { useSearchAirportsQuery } from "@/services/flight.service";
+import { convertAirportToLocation } from "@/utils/location.utils";
+import type { ILocation } from "@/interfaces/flight.interface";
 
 interface LocationSelectorProps {
-  value: Location | null;
-  onChange: (location: Location | null) => void;
+  value: ILocation | null;
+  onChange: (location: ILocation | null) => void;
   placeholder: string;
   icon: React.ReactNode;
   ariaLabel?: string;
 }
-
-// Sample airport data - you would replace this with real data
-const SAMPLE_AIRPORTS: Location[] = [
-  {
-    code: "LOS",
-    name: "Murtala Muhammed International Airport",
-    city: "Lagos",
-    country: "Nigeria",
-  },
-  {
-    code: "ABV",
-    name: "Nnamdi Azikiwe International Airport",
-    city: "Abuja",
-    country: "Nigeria",
-  },
-  {
-    code: "LIS",
-    name: "Humberto Delgado Airport",
-    city: "Lisbon",
-    country: "Portugal",
-  },
-  {
-    code: "OPO",
-    name: "Francisco Sá Carneiro Airport",
-    city: "Porto",
-    country: "Portugal",
-  },
-  {
-    code: "LHR",
-    name: "Heathrow Airport",
-    city: "London",
-    country: "United Kingdom",
-  },
-  {
-    code: "CDG",
-    name: "Charles de Gaulle Airport",
-    city: "Paris",
-    country: "France",
-  },
-  {
-    code: "JFK",
-    name: "John F. Kennedy International Airport",
-    city: "New York",
-    country: "United States",
-  },
-  {
-    code: "DXB",
-    name: "Dubai International Airport",
-    city: "Dubai",
-    country: "United Arab Emirates",
-  },
-];
 
 export function LocationSelector({
   value,
@@ -94,8 +39,37 @@ export function LocationSelector({
 }: LocationSelectorProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const open = Boolean(anchorEl);
   const isMobile = useMediaQuery("(max-width:600px)");
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Skip API call if query is too short
+  const shouldSearch = debouncedQuery.length >= 2;
+
+  const {
+    data: searchResults,
+    isLoading,
+    error,
+  } = useSearchAirportsQuery(
+    { query: debouncedQuery },
+    { skip: !shouldSearch }
+  );
+
+  console.log({ searchResults, isLoading, error });
+
+  const filteredAirports = useMemo(() => {
+    if (!searchResults?.data) return [];
+    return searchResults.data.map(convertAirportToLocation);
+  }, [searchResults]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -106,18 +80,10 @@ export function LocationSelector({
     setSearchQuery("");
   };
 
-  const handleLocationSelect = (location: Location) => {
+  const handleLocationSelect = (location: ILocation) => {
     onChange(location);
     handleClose();
   };
-
-  const filteredAirports = SAMPLE_AIRPORTS.filter(
-    (airport) =>
-      airport.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      airport.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      airport.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      airport.country.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const getDisplayValue = () => {
     if (value) {
@@ -152,7 +118,6 @@ export function LocationSelector({
               },
               "&.Mui-focused": {
                 borderColor: "primary.main",
-                // backgroundColor: "background.paper",
               },
             },
             "& .MuiOutlinedInput-notchedOutline": {
@@ -234,7 +199,6 @@ export function LocationSelector({
               sx={{
                 display: "flex",
                 alignItems: "center",
-                // p: 2,
                 borderBottom: "1px solid",
                 borderColor: "divider",
                 minHeight: "3.5rem",
@@ -250,17 +214,8 @@ export function LocationSelector({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={`Where ${placeholder}`}
                 autoFocus
-                variant={isMobile ? "standard" : "outlined"}
+                variant="standard"
                 sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                  },
-
-                  "& .MuiInput-input": {
-                    fontSize: "0.875rem",
-                    fontWeight: "medium",
-                    padding: isMobile ? "12px 0" : undefined,
-                  },
                   "& .MuiInput-root::before": {
                     borderBottom: "0 !important",
                   },
@@ -275,7 +230,7 @@ export function LocationSelector({
           <Box
             sx={
               isMobile
-                ? { px: 2, flex: 1, display: "flex", flexDirection: "column" }
+                ? { px: 0, flex: 1, display: "flex", flexDirection: "column" }
                 : { p: 0 }
             }
           >
@@ -287,7 +242,7 @@ export function LocationSelector({
                 placeholder={`Where ${placeholder}`}
                 autoFocus
                 InputProps={{
-                  startAdornment: isMobile ? null : (
+                  startAdornment: (
                     <InputAdornment
                       position="start"
                       style={{ marginRight: 16 }}
@@ -295,8 +250,13 @@ export function LocationSelector({
                       {icon}
                     </InputAdornment>
                   ),
+                  endAdornment: isLoading ? (
+                    <InputAdornment position="end">
+                      <CircularProgress size={20} />
+                    </InputAdornment>
+                  ) : null,
                 }}
-                variant={"standard"}
+                variant="standard"
                 sx={{
                   "& .MuiInput-root": {
                     padding: "0.75rem 1rem",
@@ -304,9 +264,6 @@ export function LocationSelector({
                     fontWeight: "medium",
                   },
                   "& .MuiInput-root::before": {
-                    borderBottomColor: "text.disabled",
-                  },
-                  "& .MuiInput-root::before:focus": {
                     borderBottomColor: "text.disabled",
                   },
                   "& .MuiInput-root::after": {
@@ -322,20 +279,71 @@ export function LocationSelector({
                 overflow: "auto",
                 flex: isMobile ? 1 : "none",
                 px: 0,
-
-                "&.MuiList-root ": {
+                "&.MuiList-root": {
                   paddingTop: "0.3125rem",
                   paddingBottom: "0.5rem",
                 },
               }}
             >
+              {isLoading && searchQuery.length >= 2 && (
+                <ListItem>
+                  <ListItemIcon>
+                    <CircularProgress size={20} />
+                  </ListItemIcon>
+                  <ListItemText primary="Searching..." />
+                </ListItem>
+              )}
+
+              {error && (
+                <ListItem>
+                  <ListItemIcon>
+                    <LocationOn sx={{ color: "error.main" }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Error searching locations"
+                    secondary="Please try again"
+                  />
+                </ListItem>
+              )}
+
+              {searchQuery.length >= 2 &&
+                !isLoading &&
+                filteredAirports.length === 0 && (
+                  <ListItem>
+                    <ListItemIcon>
+                      <LocationOn sx={{ color: "text.secondary" }} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="No locations found"
+                      secondary="Try a different search term"
+                      sx={{ minWidth: 36 }}
+                    />
+                  </ListItem>
+                )}
+
+              {searchQuery.length < 2 && (
+                <ListItem>
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <LocationOn sx={{ color: "text.secondary" }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Start typing to search"
+                    secondary="Enter at least 2 characters"
+                    sx={{
+                      "& .MuiTypography-body2": {
+                        fontSize: "0.75rem",
+                      },
+                    }}
+                  />
+                </ListItem>
+              )}
+
               {filteredAirports.map((airport) => (
                 <ListItem
-                  key={airport.code}
+                  key={airport.skyId || airport.code}
                   onClick={() => handleLocationSelect(airport)}
                   sx={{
                     cursor: "pointer",
-                    // borderRadius: isMobile ? 0 : 1,
                     py: 0,
                     px: isMobile ? 0 : 2,
                     "&:hover": {
@@ -346,6 +354,7 @@ export function LocationSelector({
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <LocationOn sx={{ color: "text.secondary" }} />
                   </ListItemIcon>
+
                   <ListItemText
                     primary={
                       <Box
@@ -361,17 +370,19 @@ export function LocationSelector({
                         >
                           {airport.city}
                         </Typography>
-                        <Chip
-                          label={airport.code}
-                          size="small"
-                          sx={{
-                            backgroundColor: spotterBrand.teal[100],
-                            color: "primary.main",
-                            fontSize: "0.75rem",
-                            fontWeight: "bold",
-                            height: isMobile ? 24 : 20,
-                          }}
-                        />
+                        {airport.code && (
+                          <Chip
+                            label={airport.code}
+                            size="small"
+                            sx={{
+                              backgroundColor: spotterBrand.teal[100],
+                              color: "primary.main",
+                              fontSize: "0.75rem",
+                              fontWeight: "bold",
+                              height: isMobile ? 24 : 20,
+                            }}
+                          />
+                        )}
                       </Box>
                     }
                     secondary={
