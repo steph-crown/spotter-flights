@@ -7,6 +7,10 @@ const HomePage: LazyExoticComponent<React.FC> = lazy(
   () => import("../pages/HomePage")
 );
 
+const ExplorePage: LazyExoticComponent<React.FC> = lazy(
+  () => import("../pages/ExplorePage")
+);
+
 const NotFoundPage: LazyExoticComponent<React.FC> = lazy(
   () => import("../pages/NotFoundPage")
 );
@@ -19,6 +23,10 @@ export const routes: RouteObject[] = [
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: "/explore",
+        element: <ExplorePage />,
       },
     ],
   },

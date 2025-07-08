@@ -5,6 +5,7 @@ import {
   PassengerSelector,
 } from "@/components/filters";
 import { CLASS_OPTIONS, TRIP_OPTIONS } from "@/constants/filter.constants";
+import { MOBILE_BREAKPOINT_MAX_WIDTH } from "@/constants/ui.constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useUrlSync } from "@/hooks/useUrlSync";
 import type {
@@ -42,25 +43,33 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export function FilterBar() {
+interface FilterBarProps {
+  hideSearchButton?: boolean;
+}
+
+export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
   const dispatch = useAppDispatch();
   const flightSearch = useAppSelector((state) => state.flightSearch);
   const { updateUrlFromState } = useUrlSync();
+  const navigate = useNavigate();
 
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useMediaQuery(MOBILE_BREAKPOINT_MAX_WIDTH);
   const { mode } = useColorScheme();
 
-  const paperDesktopSx = {
+  const paperDesktopShowSearchBarSx = {
+    position: "relative",
     padding: "1rem",
     paddingBottom: "3rem",
     borderRadius: "0.5rem",
-    position: "relative",
     boxShadow:
       mode === "light"
         ? "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)"
         : "0 1px 3px 0 rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15)",
   };
+
+  const paperDesktopSx = hideSearchButton ? {} : paperDesktopShowSearchBarSx;
 
   const paperMobileSx = {
     padding: "0rem",
@@ -126,15 +135,15 @@ export function FilterBar() {
 
   const handleSearch = () => {
     // Validate required fields
-    if (
-      !flightSearch.origin ||
-      !flightSearch.destination ||
-      !flightSearch.departureDate
-    ) {
-      // You can add toast notification here
-      console.warn("Please fill in all required fields");
-      return;
-    }
+    // if (
+    //   !flightSearch.origin ||
+    //   !flightSearch.destination ||
+    //   !flightSearch.departureDate
+    // ) {
+    //   // You can add toast notification here
+    //   console.warn("Please fill in all required fields");
+    //   return;
+    // }
 
     // Set searching state and save search params
     dispatch(setSearching(true));
@@ -154,6 +163,8 @@ export function FilterBar() {
     // For now, we'll just log the search
     console.log("Searching with params:", flightSearch);
 
+    navigate("/explore");
+
     // Reset searching state after a delay (simulate API call)
     setTimeout(() => {
       dispatch(setSearching(false));
@@ -168,9 +179,11 @@ export function FilterBar() {
     ? new Date(flightSearch.returnDate)
     : null;
 
+  console.log({ hideSearchButton });
+
   return (
     <Paper
-      elevation={isMobile ? 0 : 3}
+      elevation={hideSearchButton || isMobile ? 0 : 3}
       sx={{
         "&.MuiPaper-elevation": isMobile ? paperMobileSx : paperDesktopSx,
       }}
@@ -205,7 +218,14 @@ export function FilterBar() {
           rowGap={1.5}
           flexDirection={isMobile ? "column" : "row"}
         >
-          <Box display={"flex"} alignItems={"center"}>
+          <Box
+            display={"flex"}
+            alignItems={"center"}
+            sx={{
+              width: isMobile ? "100%" : "fit-content",
+              maxWidth: !isMobile ? "65%" : "unset",
+            }}
+          >
             <LocationSelector
               value={flightSearch.origin}
               onChange={handleOriginChange}
@@ -237,26 +257,28 @@ export function FilterBar() {
           />
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<Search />}
-          onClick={handleSearch}
-          disabled={flightSearch.isSearching}
-          sx={{
-            px: 2.25,
-            py: 1,
-            fontSize: "0.875rem",
-            fontWeight: "medium",
-            textTransform: "none",
-            position: "absolute",
-            bottom: "-1.25rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}
-        >
-          {flightSearch.isSearching ? "Searching..." : "Explore"}
-        </Button>
+        {!hideSearchButton && (
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Search />}
+            onClick={handleSearch}
+            disabled={flightSearch.isSearching}
+            sx={{
+              px: 2.25,
+              py: 1,
+              fontSize: "0.875rem",
+              fontWeight: "medium",
+              textTransform: "none",
+              position: "absolute",
+              bottom: "-1.25rem",
+              left: "50%",
+              transform: "translateX(-50%)",
+            }}
+          >
+            {flightSearch.isSearching ? "Searching..." : "Explore"}
+          </Button>
+        )}
       </Stack>
     </Paper>
   );

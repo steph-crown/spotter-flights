@@ -14,6 +14,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useState } from "react";
+import {
+  MOBILE_BREAKPOINT_MAX_WIDTH,
+  SMALLER_MOBILE_BREAKPOINT_MAX_WIDTH,
+} from "@/constants/ui.constants";
 
 interface CombinedDateSelectorProps {
   departureDate: Date | null;
@@ -36,7 +40,9 @@ export function CombinedDateSelector({
   const [activeField, setActiveField] = useState<"departure" | "return">(
     "departure"
   );
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useMediaQuery(MOBILE_BREAKPOINT_MAX_WIDTH);
+  const isSmallerMobile = useMediaQuery(SMALLER_MOBILE_BREAKPOINT_MAX_WIDTH);
+
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -48,6 +54,8 @@ export function CombinedDateSelector({
   };
 
   const getDisplayValue = () => {
+    if (!departureDate && !returnDate) return "";
+
     if (tripType === "round_trip") {
       const departure = departureDate
         ? departureDate.toLocaleDateString("en-US", {
@@ -89,17 +97,11 @@ export function CombinedDateSelector({
           }
           onClick={handleClick}
           InputProps={{
-            startAdornment: (
-              <InputAdornment
-                position="start"
-                style={{
-                  marginRight: "-0.5rem",
-                }}
-              >
+            startAdornment: isSmallerMobile ? null : (
+              <InputAdornment position="start">
                 <CalendarToday
                   sx={{
                     color: "text.secondary",
-                    fontSize: "1.1rem",
                   }}
                 />
               </InputAdornment>
@@ -108,14 +110,14 @@ export function CombinedDateSelector({
           inputProps={{ "aria-label": ariaLabel }}
           sx={{
             "& .MuiOutlinedInput-root": {
-              paddingLeft: "0.5rem",
+              paddingLeft: isSmallerMobile ? "0" : "1.5rem",
               cursor: "pointer",
               border: "1px solid",
               borderColor: "divider",
               borderRadius: 1,
               backgroundColor: "transparent",
               "&:hover": {
-                // backgroundColor: "#f8f9fa",
+                borderColor: "text.secondary",
               },
               "&.Mui-focused": {
                 borderColor: "primary.main",
@@ -127,11 +129,14 @@ export function CombinedDateSelector({
             },
             "& .MuiInputBase-input": {
               fontSize: "1rem",
-              fontWeight: "400",
-              padding: "1rem 0.875rem",
+              fontWeight: "500",
+              padding: isMobile ? "0.5rem 1rem" : "0.875rem 0.875rem",
               cursor: "pointer",
-              color:
-                departureDate || returnDate ? "text.primary" : "text.secondary",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              minHeight: isMobile ? "2rem" : "",
+              // color: value ? "text.primary" : "text.secondary",
+              color: getDisplayValue() ? "text.primary" : "text.secondary",
             },
           }}
         />

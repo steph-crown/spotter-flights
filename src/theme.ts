@@ -3,6 +3,7 @@ import { createTheme } from "@mui/material/styles";
 export const spotterBrand = {
   teal: {
     50: "#e6f7f7",
+    75: "#b3e6e625",
     100: "#b3e6e650",
     200: "#80d4d4",
     300: "#4dc2c2",
@@ -18,7 +19,7 @@ export const spotterBrand = {
     100: "#f3f4f6",
     200: "#e5e7eb",
     300: "#d1d5db",
-    400: "#9A9FA4",
+    400: "#9aa0a6",
     500: "#5f6368",
     600: "#4b5563",
     700: "#374151",
@@ -50,6 +51,7 @@ export const theme = createTheme({
           secondary: spotterBrand.gray[600],
           disabled: spotterBrand.gray[500],
           primaryChannel: spotterBrand.gray[200],
+          secondaryChannel: spotterBrand.gray[400],
         },
       },
     },

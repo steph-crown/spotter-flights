@@ -21,6 +21,10 @@ import {
 import { useSearchAirportsQuery } from "@/services/flight.service";
 import { convertAirportToLocation } from "@/utils/location.utils";
 import type { ILocation } from "@/interfaces/flight.interface";
+import {
+  MOBILE_BREAKPOINT_MAX_WIDTH,
+  SMALLER_MOBILE_BREAKPOINT_MAX_WIDTH,
+} from "@/constants/ui.constants";
 
 interface LocationSelectorProps {
   value: ILocation | null;
@@ -41,7 +45,8 @@ export function LocationSelector({
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const open = Boolean(anchorEl);
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useMediaQuery(MOBILE_BREAKPOINT_MAX_WIDTH);
+  const isSmallerMobile = useMediaQuery(SMALLER_MOBILE_BREAKPOINT_MAX_WIDTH);
 
   // Debounce search query
   useEffect(() => {
@@ -100,21 +105,21 @@ export function LocationSelector({
           placeholder={placeholder}
           onClick={handleClick}
           InputProps={{
-            startAdornment: isMobile ? null : (
+            startAdornment: isSmallerMobile ? null : (
               <InputAdornment position="start">{icon}</InputAdornment>
             ),
           }}
           inputProps={{ "aria-label": ariaLabel }}
           sx={{
             "& .MuiOutlinedInput-root": {
-              paddingLeft: isMobile ? "0" : "1.5rem",
+              paddingLeft: isSmallerMobile ? "0" : "1.5rem",
               cursor: "pointer",
               border: "1px solid",
               borderColor: "divider",
               borderRadius: 1,
               backgroundColor: "transparent",
               "&:hover": {
-                borderColor: "primary.main",
+                borderColor: "text.secondary",
               },
               "&.Mui-focused": {
                 borderColor: "primary.main",
