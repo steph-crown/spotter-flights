@@ -14,10 +14,10 @@ import { selectLocaleSettings } from "@/store/slices/flightSearch.slice";
 import { analyzeFlightStops } from "@/utils/flight.utils";
 import {
   formatDuration,
-  formatPrice,
-  formatTime,
   formatFullDateTime,
+  formatPrice,
   formatStopTooltip,
+  formatTime,
 } from "@/utils/format.utils";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import {
@@ -56,7 +56,6 @@ export function FlightItinerary({
     sx: { fontSize: "0.75rem" },
   };
 
-  // Container styles
   const containerSx = {
     cursor: "pointer",
     py: isSmallMobile ? 1.25 : 2,
@@ -85,7 +84,6 @@ export function FlightItinerary({
     setIsExpanded(!isExpanded);
   };
 
-  // Reusable components with tooltips
   const TimeText = ({
     time,
     weight = 600,
@@ -106,7 +104,6 @@ export function FlightItinerary({
 
   const InfoDot = () => <Typography>·</Typography>;
 
-  // Mobile grid layout
   const MobileGrid = () => (
     <Box width={180} flex={1} sx={{ flexShrink: 0 }}>
       <Box
@@ -147,7 +144,6 @@ export function FlightItinerary({
     </Box>
   );
 
-  // Desktop layout sections
   const TimeSection = () => (
     <Box
       minWidth={180}
@@ -222,7 +218,6 @@ export function FlightItinerary({
     </Box>
   );
 
-  // Small mobile additional info
   const SmallMobileInfo = () => (
     <Box display="flex" mt={0.5} alignItems="center" minWidth={0}>
       <FlightLogo size={32} carrier={carrier} />
@@ -233,10 +228,12 @@ export function FlightItinerary({
           minWidth={0}
         >
           <SecondaryText>
-            {flightLeg.stopCount
-              ? `${flightLeg.stopCount} Stop${
+            {flightLeg.stopCount ? (
+              <>
+                {`${flightLeg.stopCount} Stop${
                   flightLeg.stopCount > 1 ? "s" : ""
-                } in ${stops.map((stop, index) => (
+                } in`}{" "}
+                {stops.map((stop, index) => (
                   <span key={stop.id}>
                     <CustomTooltip title={formatStopTooltip(stop)}>
                       <span
@@ -250,8 +247,11 @@ export function FlightItinerary({
                     </CustomTooltip>
                     {index !== stops.length - 1 && ", "}
                   </span>
-                ))}`
-              : "Non-Stop"}
+                ))}
+              </>
+            ) : (
+              "Non-Stop"
+            )}
           </SecondaryText>
           <InfoDot />
           <Typography
@@ -322,7 +322,6 @@ export function FlightItinerary({
         {isSmallMobile && <SmallMobileInfo />}
       </Box>
 
-      {/* Expanded details section */}
       <ExpandedFlightDetails itinerary={itinerary} isExpanded={isExpanded} />
     </Box>
   );

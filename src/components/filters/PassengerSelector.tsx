@@ -45,7 +45,6 @@ export function PassengerSelector({
       newValue[type] = Math.max(0, newValue[type] - 1);
     }
 
-    // Ensure at least 1 adult
     if (type === "adults" && newValue.adults < 1) {
       newValue.adults = 1;
     }
@@ -216,9 +215,7 @@ export function PassengerSelector({
               cursor: "pointer",
             },
           }}
-        >
-          {/* Empty - we use Popover instead */}
-        </Select>
+        ></Select>
       </FormControl>
 
       <Popover

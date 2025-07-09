@@ -51,8 +51,6 @@ export const FlightResults: React.FC<FlightResultsProps> = ({
     );
   }
 
-  console.log({ results });
-
   return (
     <Box pb={8}>
       <Box

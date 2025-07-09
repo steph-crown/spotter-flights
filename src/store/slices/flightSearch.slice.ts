@@ -36,7 +36,6 @@ const flightSearchSlice = createSlice({
       action: PayloadAction<IFlightSearchState["tripType"]>
     ) => {
       state.tripType = action.payload;
-      // Clear return date for one-way trips
       if (action.payload === "one_way") {
         state.returnDate = null;
       }
@@ -86,7 +85,7 @@ const flightSearchSlice = createSlice({
     resetSearch: (state) => {
       return {
         ...initialState,
-        tripType: state.tripType, // Keep trip type
+        tripType: state.tripType,
       };
     },
 

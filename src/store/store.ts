@@ -17,7 +17,6 @@ export const store = configureStore({
           flightService.util.resetApiState.type,
         ],
         ignoredPaths: [
-          // Ignore these paths in the state
           `${flightService.reducerPath}.mutations`,
           `${flightService.reducerPath}.queries`,
           `${flightService.reducerPath}.subscriptions`,

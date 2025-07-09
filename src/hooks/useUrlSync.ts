@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "./redux";
 import { updateFromUrlParams } from "@/store/slices/flightSearch.slice";
@@ -9,42 +9,48 @@ import type {
   SortByOption,
 } from "@/interfaces/flight.interface";
 
+const DEFAULT_PASSENGERS: IPassengerCounts = {
+  adults: 1,
+  children: 0,
+  infantsInSeat: 0,
+  infantsOnLap: 0,
+} as const;
+
+const DEFAULT_TRIP_TYPE = "round_trip" as const;
+const DEFAULT_CLASS_TYPE = "economy" as const;
+const DEFAULT_SORT_BY = "best" as const;
+
 export const useUrlSync = () => {
   const dispatch = useAppDispatch();
   const flightSearch = useAppSelector((state) => state.flightSearch);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Convert state to URL params
+  const isDefaultPassengers = useMemo(
+    () =>
+      JSON.stringify(flightSearch.passengers) ===
+      JSON.stringify(DEFAULT_PASSENGERS),
+    [flightSearch.passengers]
+  );
+
   const updateUrlFromState = useCallback(() => {
     const params = new URLSearchParams();
 
-    // Basic trip info
-    if (flightSearch.tripType !== "round_trip") {
+    if (flightSearch.tripType !== DEFAULT_TRIP_TYPE) {
       params.set("tripType", flightSearch.tripType);
     }
-    if (flightSearch.classType !== "economy") {
+
+    if (flightSearch.classType !== DEFAULT_CLASS_TYPE) {
       params.set("class", flightSearch.classType);
     }
 
-    if (flightSearch.sortBy !== "best") {
+    if (flightSearch.sortBy !== DEFAULT_SORT_BY) {
       params.set("sortBy", flightSearch.sortBy);
     }
 
-    // Passengers (only if different from default)
-    const defaultPassengers = {
-      adults: 1,
-      children: 0,
-      infantsInSeat: 0,
-      infantsOnLap: 0,
-    };
-    if (
-      JSON.stringify(flightSearch.passengers) !==
-      JSON.stringify(defaultPassengers)
-    ) {
+    if (!isDefaultPassengers) {
       params.set("passengers", JSON.stringify(flightSearch.passengers));
     }
 
-    // Locations
     if (flightSearch.origin) {
       params.set(
         "from",
@@ -56,6 +62,7 @@ export const useUrlSync = () => {
         })
       );
     }
+
     if (flightSearch.destination) {
       params.set(
         "to",
@@ -68,84 +75,69 @@ export const useUrlSync = () => {
       );
     }
 
-    // Dates
     if (flightSearch.departureDate) {
       params.set("departure", flightSearch.departureDate);
     }
-    if (flightSearch.returnDate && flightSearch.tripType === "round_trip") {
+
+    if (
+      flightSearch.returnDate &&
+      flightSearch.tripType === DEFAULT_TRIP_TYPE
+    ) {
       params.set("return", flightSearch.returnDate);
     }
 
     setSearchParams(params, { replace: true });
-  }, [flightSearch, setSearchParams]);
+  }, [flightSearch, isDefaultPassengers, setSearchParams]);
 
-  // Update state from URL params on mount and when URL changes
+  const parseLocationFromParam = useCallback(
+    (param: string | null): ILocation | null => {
+      if (!param) return null;
+
+      try {
+        const parsed = JSON.parse(param);
+        return {
+          code: parsed.code || "",
+          city: parsed.city || "",
+          name: parsed.name || parsed.city || "",
+          country: parsed.country || "",
+          skyId: parsed.skyId,
+          entityId: parsed.entityId,
+        };
+      } catch {
+        return null;
+      }
+    },
+    []
+  );
+
+  const parsePassengersFromParam = useCallback(
+    (param: string | null): IPassengerCounts => {
+      if (!param) return DEFAULT_PASSENGERS;
+
+      try {
+        return JSON.parse(param);
+      } catch {
+        return DEFAULT_PASSENGERS;
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     const tripType =
       (searchParams.get("tripType") as IFlightSearchState["tripType"]) ||
-      "round_trip";
-
+      DEFAULT_TRIP_TYPE;
     const classType =
       (searchParams.get("class") as IFlightSearchState["classType"]) ||
-      "economy";
-
-    const sortBy = (searchParams.get("sortBy") as SortByOption) || "best";
-
-    let passengers: IPassengerCounts = {
-      adults: 1,
-      children: 0,
-      infantsInSeat: 0,
-      infantsOnLap: 0,
-    };
-    const passengersParam = searchParams.get("passengers");
-    if (passengersParam) {
-      try {
-        passengers = JSON.parse(passengersParam);
-      } catch {
-        console.warn("Invalid passengers parameter in URL");
-      }
-    }
-
-    let origin: ILocation | null = null;
-    const fromParam = searchParams.get("from");
-    if (fromParam) {
-      try {
-        const parsed = JSON.parse(fromParam);
-        origin = {
-          code: parsed.code || "",
-          city: parsed.city || "",
-          name: parsed.name || parsed.city || "",
-          country: parsed.country || "",
-          skyId: parsed.skyId,
-          entityId: parsed.entityId,
-        };
-      } catch {
-        console.warn("Invalid from parameter in URL");
-      }
-    }
-
-    let destination: ILocation | null = null;
-    const toParam = searchParams.get("to");
-    if (toParam) {
-      try {
-        const parsed = JSON.parse(toParam);
-        destination = {
-          code: parsed.code || "",
-          city: parsed.city || "",
-          name: parsed.name || parsed.city || "",
-          country: parsed.country || "",
-          skyId: parsed.skyId,
-          entityId: parsed.entityId,
-        };
-      } catch {
-        console.warn("Invalid to parameter in URL");
-      }
-    }
-
+      DEFAULT_CLASS_TYPE;
+    const sortBy =
+      (searchParams.get("sortBy") as SortByOption) || DEFAULT_SORT_BY;
+    const passengers = parsePassengersFromParam(searchParams.get("passengers"));
+    const origin = parseLocationFromParam(searchParams.get("from"));
+    const destination = parseLocationFromParam(searchParams.get("to"));
     const departureDate = searchParams.get("departure");
     const returnDate = searchParams.get("return");
 
-    // Update state with URL params
     dispatch(
       updateFromUrlParams({
         tripType,
@@ -155,10 +147,15 @@ export const useUrlSync = () => {
         destination,
         departureDate,
         sortBy,
-        returnDate: tripType === "round_trip" ? returnDate : null,
+        returnDate: tripType === DEFAULT_TRIP_TYPE ? returnDate : null,
       })
     );
-  }, [searchParams, dispatch]);
+  }, [
+    searchParams,
+    dispatch,
+    parseLocationFromParam,
+    parsePassengersFromParam,
+  ]);
 
   return { updateUrlFromState };
 };

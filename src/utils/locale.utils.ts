@@ -15,7 +15,6 @@ export const findMatchingLocaleConfig = async (
 ): Promise<ILocaleConfig | null> => {
   const userCountryCode = (await getUserCountryCode()) || "US";
 
-  // First, try to find exact match by country code
   const exactMatch = localeConfigs.find(
     (config) =>
       config.countryCode.toLowerCase() === userCountryCode.toLowerCase()

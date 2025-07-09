@@ -9,19 +9,19 @@ import {
   setSortBy,
 } from "@/store/slices/flightSearch.slice";
 import { spotterBrand } from "@/theme";
+import { formatDateForAPI } from "@/utils/format.utils";
 import {
   Alert,
   Box,
-  Button,
   CircularProgress,
   Container,
   Typography,
 } from "@mui/material";
-import React, { useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useCallback, useEffect, useMemo } from "react";
+
+type SortOption = "best" | "price_high";
 
 const ExplorePage: React.FC = () => {
-  const navigate = useNavigate();
   const flightSearch = useAppSelector(selectFlightSearch);
   const dispatch = useAppDispatch();
 
@@ -30,18 +30,16 @@ const ExplorePage: React.FC = () => {
     { data: flightResults, isLoading, isFetching, isError },
   ] = useLazySearchFlightsQuery();
 
-  const performFlightSearch = useCallback(() => {
+  const searchRequest = useMemo((): IFlightSearchRequest | null => {
     if (
       !flightSearch.origin ||
       !flightSearch.destination ||
       !flightSearch.departureDate
     ) {
-      return;
+      return null;
     }
 
-    console.log({ flightSearch });
-
-    const searchRequest: IFlightSearchRequest = {
+    return {
       originSkyId: flightSearch.origin.skyId || flightSearch.origin.code,
       destinationSkyId:
         flightSearch.destination.skyId || flightSearch.destination.code,
@@ -64,117 +62,107 @@ const ExplorePage: React.FC = () => {
       currency: flightSearch.currency,
       countryCode: flightSearch.countryCode,
     };
+  }, [flightSearch]);
 
-    searchFlights(searchRequest);
-  }, [flightSearch, searchFlights]);
+  const performFlightSearch = useCallback(() => {
+    if (searchRequest) {
+      searchFlights(searchRequest);
+    }
+  }, [searchRequest, searchFlights]);
 
-  // Trigger search when component mounts or search params change
   useEffect(() => {
-    const shouldSearch =
-      flightSearch.origin &&
-      flightSearch.destination &&
-      flightSearch.departureDate;
-
-    if (shouldSearch) {
+    if (searchRequest) {
       performFlightSearch();
     }
-  }, [flightSearch, navigate, performFlightSearch]);
+  }, [searchRequest, performFlightSearch]);
 
-  const formatDateForAPI = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
+  const handleSortChange = useCallback(
+    (sortOption: SortOption) => {
+      dispatch(setSortBy(sortOption));
+    },
+    [dispatch]
+  );
 
-  console.log({ fififir: isLoading, isFetching });
+  const sortOptions = useMemo(
+    () => [
+      { key: "best" as const, label: "Best" },
+      { key: "price_high" as const, label: "Most Expensive" },
+    ],
+    []
+  );
 
-  const baseSortCardSx = {
-    cursor: "pointer",
-    flex: 1,
-    px: 3,
-    py: 1.5,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "1px solid",
-    borderRadius: 2,
-    borderColor: "text.primaryChannel",
-  };
+  const baseSortCardSx = useMemo(
+    () => ({
+      cursor: "pointer",
+      flex: 1,
+      px: 3,
+      py: 1.5,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      border: "1px solid",
+      borderRadius: 2,
+      borderColor: "text.primaryChannel",
+    }),
+    []
+  );
 
-  const activeSortCardSx = {
-    borderColor: "primary.main",
+  const activeSortCardSx = useMemo(
+    () => ({
+      borderColor: "primary.main",
+      background: spotterBrand.teal[75],
+      borderBottomWidth: "0.25rem",
+    }),
+    []
+  );
 
-    background: spotterBrand.teal[75],
-    borderBottomWidth: "0.25rem",
-  };
+  const containerSx = useMemo(
+    () => ({
+      "&.MuiContainer-root": {
+        maxWidth: "1024px",
+      },
+    }),
+    []
+  );
+
+  const isLoadingOrFetching = isLoading || isFetching;
 
   return (
     <>
-      <LoadingProgressBar isLoading={isLoading || isFetching} />
+      <LoadingProgressBar isLoading={isLoadingOrFetching} />
 
       <Box sx={{ minHeight: "100vh", backgroundColor: "background.default" }}>
-        <Container
-          sx={{
-            py: 2,
-            pt: 4,
-            "&.MuiContainer-root ": {
-              maxWidth: "1024px",
-            },
-          }}
-        >
+        <Container sx={{ py: 2, pt: 4, ...containerSx }}>
           <FilterBar hideSearchButton={true} />
         </Container>
 
-        {/* Desktop Content */}
-        <Container
-          sx={{
-            "&.MuiContainer-root ": {
-              maxWidth: "1024px",
-            },
-          }}
-        >
+        <Container sx={containerSx}>
           <Box>
             <Box sx={{ display: "flex", mb: 2 }}>
-              <Box
-                sx={{
-                  ...baseSortCardSx,
-                  borderTopRightRadius: 0,
-                  borderBottomRightRadius: 0,
-                  ...(flightSearch.sortBy === "best" ? activeSortCardSx : {}),
-                }}
-                onClick={() => {
-                  dispatch(setSortBy("best"));
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  color="primary"
-                  sx={{ fontWeight: "medium" }}
+              {sortOptions.map((option, index) => (
+                <Box
+                  key={option.key}
+                  sx={{
+                    ...baseSortCardSx,
+                    borderTopRightRadius: index === 0 ? 0 : 8,
+                    borderBottomRightRadius: index === 0 ? 0 : 8,
+                    borderTopLeftRadius: index === 1 ? 0 : 8,
+                    borderBottomLeftRadius: index === 1 ? 0 : 8,
+                    ...(flightSearch.sortBy === option.key
+                      ? activeSortCardSx
+                      : {}),
+                  }}
+                  onClick={() => handleSortChange(option.key)}
                 >
-                  Best
-                </Typography>
-              </Box>
-
-              <Box
-                component={Button}
-                sx={{
-                  ...baseSortCardSx,
-                  borderTopLeftRadius: 0,
-                  borderBottomLeftRadius: 0,
-                  ...(flightSearch.sortBy === "price_high"
-                    ? activeSortCardSx
-                    : {}),
-                  gap: 1,
-                }}
-                onClick={() => {
-                  dispatch(setSortBy("price_high"));
-                }}
-              >
-                <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-                  Most Expensive{" "}
-                </Typography>
-              </Box>
+                  <Typography
+                    variant="body1"
+                    color="primary"
+                    sx={{ fontWeight: "medium" }}
+                  >
+                    {option.label}
+                  </Typography>
+                </Box>
+              ))}
             </Box>
 
             {isLoading && (

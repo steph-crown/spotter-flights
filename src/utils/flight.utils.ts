@@ -46,18 +46,16 @@ export function getLayoverMinutes(
 
   const diffInMs = departure.getTime() - arrival.getTime();
 
-  // Return 0 if departure is before arrival (shouldn't happen in valid data)
   if (diffInMs < 0) return 0;
 
   return Math.floor(diffInMs / (1000 * 60));
 }
 
-// Helper function to get layover for a specific segment
 export function getSegmentLayover(
   segments: IFlightSegment[],
   currentIndex: number
 ): number {
-  if (currentIndex >= segments.length - 1) return 0; // No layover for last segment
+  if (currentIndex >= segments.length - 1) return 0;
 
   const currentSegment = segments[currentIndex];
   const nextSegment = segments[currentIndex + 1];

@@ -1,49 +1,53 @@
 import { Alert, Button, Collapse, IconButton, Typography } from "@mui/material";
 import { Refresh, WifiOff, Close } from "@mui/icons-material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+const BANNER_HEIGHT = "64px";
 
 export const NetworkStatusBanner = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isDismissed, setIsDismissed] = useState(false);
 
+  const setPaddingTop = useCallback((padding: string) => {
+    document.body.style.paddingTop = padding;
+  }, []);
+
+  const handleOnline = useCallback(() => {
+    setIsOnline(true);
+    setIsDismissed(false);
+    setPaddingTop("0");
+  }, [setPaddingTop]);
+
+  const handleOffline = useCallback(() => {
+    setIsOnline(false);
+    setIsDismissed(false);
+    setPaddingTop(BANNER_HEIGHT);
+  }, [setPaddingTop]);
+
+  const handleReload = useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  const handleDismiss = useCallback(() => {
+    setIsDismissed(true);
+    setPaddingTop("0");
+  }, [setPaddingTop]);
+
   useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      setIsDismissed(false);
-      document.body.style.paddingTop = "0";
-    };
-
-    const handleOffline = () => {
-      setIsOnline(false);
-      setIsDismissed(false);
-      document.body.style.paddingTop = "64px";
-    };
-
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
     if (!isOnline && !isDismissed) {
-      document.body.style.paddingTop = "64px";
+      setPaddingTop(BANNER_HEIGHT);
     }
 
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
-      document.body.style.paddingTop = "0";
+      setPaddingTop("0");
     };
-  }, []);
+  }, [handleOnline, handleOffline, isOnline, isDismissed, setPaddingTop]);
 
-  const handleReload = () => {
-    window.location.reload();
-  };
-
-  const handleDismiss = () => {
-    setIsDismissed(true);
-    // Remove padding when dismissed
-    document.body.style.paddingTop = "0";
-  };
-
-  // Don't show banner if online or dismissed
   if (isOnline || isDismissed) {
     return null;
   }
@@ -58,7 +62,7 @@ export const NetworkStatusBanner = () => {
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1400, // Higher than most MUI components
+          zIndex: 1400,
           borderRadius: 0,
           boxShadow: 1,
           "& .MuiAlert-message": {

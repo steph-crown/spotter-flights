@@ -37,7 +37,6 @@ export function ExpandedFlightDetails({
           Flight Details
         </Typography>
 
-        {/* Flight segments */}
         <Box>
           {flightLeg?.segments?.map((segment, index) => {
             const layoverMinutes = getSegmentLayover(flightLeg.segments, index);
@@ -54,7 +53,6 @@ export function ExpandedFlightDetails({
           })}
         </Box>
 
-        {/* Additional flight info */}
         <Divider sx={{ my: 2 }} />
 
         <Box
@@ -121,10 +119,6 @@ export function ExpandedFlightDetails({
               </Typography>
             </Box>
           </Box>
-
-          {/* <Button variant="outlined" sx={{ py: 1 }}>
-            Select flight
-          </Button> */}
         </Box>
       </Box>
     </Collapse>

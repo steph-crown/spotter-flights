@@ -18,49 +18,129 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
+import { useMemo } from "react";
+
+const TRAVEL_TIPS = [
+  {
+    icon: FlightTakeoff,
+    title: "Travel Requirements",
+    description: "Check visa and passport requirements before you fly.",
+  },
+  {
+    icon: Luggage,
+    title: "Baggage Guide",
+    description: "Learn about baggage allowances and restrictions.",
+  },
+  {
+    icon: CheckCircle,
+    title: "Online Check-in",
+    description: "Save time at the airport with mobile check-in.",
+  },
+] as const;
+
+const SOCIAL_LINKS = [
+  { icon: Twitter, url: "#", label: "Twitter" },
+  { icon: Facebook, url: "#", label: "Facebook" },
+  { icon: Instagram, url: "#", label: "Instagram" },
+  { icon: LinkedIn, url: "#", label: "LinkedIn" },
+] as const;
+
+const FOOTER_LINKS = {
+  Company: ["About Us", "Careers", "Press", "Blog"],
+  Support: ["Help Center", "Contact Us", "Travel Alerts", "Feedback"],
+  Legal: [
+    "Privacy Policy",
+    "Terms of Service",
+    "Cookie Policy",
+    "Accessibility",
+  ],
+} as const;
 
 const HomepageFooter = () => {
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT_MAX_WIDTH);
 
-  const travelTips = [
-    {
-      icon: (
-        <FlightTakeoff sx={{ fontSize: "1.5rem", color: "text.secondary" }} />
-      ),
-      title: "Travel Requirements",
-      description: "Check visa and passport requirements before you fly.",
-    },
-    {
-      icon: <Luggage sx={{ fontSize: "1.5rem", color: "text.secondary" }} />,
-      title: "Baggage Guide",
-      description: "Learn about baggage allowances and restrictions.",
-    },
-    {
-      icon: (
-        <CheckCircle sx={{ fontSize: "1.5rem", color: "text.secondary" }} />
-      ),
-      title: "Online Check-in",
-      description: "Save time at the airport with mobile check-in.",
-    },
-  ];
+  const containerSx = useMemo(
+    () => ({
+      py: 8,
+      "&.MuiContainer-root": {
+        maxWidth: "1024px",
+      },
+    }),
+    []
+  );
 
-  const socialLinks = [
-    { icon: <Twitter />, url: "#", label: "Twitter" },
-    { icon: <Facebook />, url: "#", label: "Facebook" },
-    { icon: <Instagram />, url: "#", label: "Instagram" },
-    { icon: <LinkedIn />, url: "#", label: "LinkedIn" },
-  ];
+  const travelTipsGridSx = useMemo(
+    () => ({
+      display: "grid",
+      gridTemplateColumns: {
+        xs: "1fr",
+        md: "repeat(3, 1fr)",
+      },
+      gap: 3,
+    }),
+    []
+  );
 
-  const footerLinks = {
-    Company: ["About Us", "Careers", "Press", "Blog"],
-    Support: ["Help Center", "Contact Us", "Travel Alerts", "Feedback"],
-    Legal: [
-      "Privacy Policy",
-      "Terms of Service",
-      "Cookie Policy",
-      "Accessibility",
-    ],
-  };
+  const footerGridSx = useMemo(
+    () => ({
+      display: "grid",
+      gridTemplateColumns: {
+        xs: "1fr",
+        md: "2fr 1fr 1fr 1fr",
+      },
+      gap: 4,
+    }),
+    []
+  );
+
+  const tipCardSx = useMemo(
+    () => ({
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 2,
+      p: 2,
+      borderRadius: 1,
+      cursor: "pointer",
+      transition: "background-color 0.2s ease",
+      "&:hover": {
+        bgcolor: "background.paper",
+      },
+    }),
+    []
+  );
+
+  const socialButtonSx = useMemo(
+    () => ({
+      color: "text.secondary",
+      "&:hover": {
+        color: "primary.main",
+        bgcolor: "primary.main",
+      },
+    }),
+    []
+  );
+
+  const linkSx = useMemo(
+    () => ({
+      fontSize: "0.75rem",
+      transition: "color 0.2s ease",
+      "&:hover": {
+        color: "primary.main",
+      },
+    }),
+    []
+  );
+
+  const bottomSectionSx = useMemo(
+    () => ({
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      justifyContent: "space-between",
+      alignItems: isMobile ? "flex-start" : "center",
+      gap: 2,
+    }),
+    [isMobile]
+  );
 
   return (
     <Box
@@ -72,14 +152,7 @@ const HomepageFooter = () => {
       }}
     >
       <Box sx={{ bgcolor: "grey.50" }}>
-        <Container
-          sx={{
-            py: 8,
-            "&.MuiContainer-root": {
-              maxWidth: "1024px",
-            },
-          }}
-        >
+        <Container sx={containerSx}>
           <Typography
             variant="h5"
             sx={{
@@ -91,47 +164,34 @@ const HomepageFooter = () => {
             Travel Tips & Resources
           </Typography>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "repeat(3, 1fr)",
-              },
-              gap: 3,
-            }}
-          >
-            {travelTips.map((tip, index) => (
-              <Box
-                key={index}
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 2,
-                  p: 2,
-                  borderRadius: 1,
-                  cursor: "pointer",
-                  transition: "background-color 0.2s ease",
-                  "&:hover": {
-                    bgcolor: "background.paper",
-                  },
-                }}
-              >
-                <Box sx={{ mt: 0.5 }}>{tip.icon}</Box>
-                <Box>
-                  <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    {tip.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: "0.75rem" }}
-                  >
-                    {tip.description}
-                  </Typography>
+          <Box sx={travelTipsGridSx}>
+            {TRAVEL_TIPS.map((tip, index) => {
+              const IconComponent = tip.icon;
+              return (
+                <Box key={index} sx={tipCardSx}>
+                  <Box sx={{ mt: 0.5 }}>
+                    <IconComponent
+                      sx={{ fontSize: "1.5rem", color: "text.secondary" }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: 600, mb: 0.5 }}
+                    >
+                      {tip.title}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: "0.75rem" }}
+                    >
+                      {tip.description}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
+              );
+            })}
           </Box>
         </Container>
       </Box>
@@ -151,16 +211,7 @@ const HomepageFooter = () => {
             },
           }}
         >
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "2fr 1fr 1fr 1fr",
-              },
-              gap: 4,
-            }}
-          >
+          <Box sx={footerGridSx}>
             <Box>
               <Box sx={{ mb: 3 }}>
                 <Logo />
@@ -177,25 +228,23 @@ const HomepageFooter = () => {
               </Box>
 
               <Box sx={{ display: "flex", gap: 1 }}>
-                {socialLinks.map((social, index) => (
-                  <IconButton
-                    key={index}
-                    size="small"
-                    sx={{
-                      color: "text.secondary",
-                      "&:hover": {
-                        color: "primary.main",
-                        bgcolor: "primary.main",
-                      },
-                    }}
-                  >
-                    {social.icon}
-                  </IconButton>
-                ))}
+                {SOCIAL_LINKS.map((social, index) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <IconButton
+                      key={index}
+                      size="small"
+                      sx={socialButtonSx}
+                      aria-label={social.label}
+                    >
+                      <IconComponent />
+                    </IconButton>
+                  );
+                })}
               </Box>
             </Box>
 
-            {Object.entries(footerLinks).map(([category, links]) => (
+            {Object.entries(FOOTER_LINKS).map(([category, links]) => (
               <Box key={category}>
                 <Typography variant="body1" sx={{ fontWeight: 600, mb: 2 }}>
                   {category}
@@ -207,13 +256,7 @@ const HomepageFooter = () => {
                       href="#"
                       color="text.secondary"
                       underline="none"
-                      sx={{
-                        fontSize: "0.75rem",
-                        transition: "color 0.2s ease",
-                        "&:hover": {
-                          color: "primary.main",
-                        },
-                      }}
+                      sx={linkSx}
                     >
                       {link}
                     </Link>
@@ -225,15 +268,7 @@ const HomepageFooter = () => {
 
           <Divider sx={{ my: 3 }} />
 
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: isMobile ? "column" : "row",
-              justifyContent: "space-between",
-              alignItems: isMobile ? "flex-start" : "center",
-              gap: 2,
-            }}
-          >
+          <Box sx={bottomSectionSx}>
             <Typography
               variant="body2"
               color="text.secondary"

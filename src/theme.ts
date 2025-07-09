@@ -67,7 +67,6 @@ export const theme = createTheme({
           contrastText: "#ffffff",
         },
         background: {
-          // default: "#0a0a0a",
           default: "#202124",
           paper: "#202124",
         },
@@ -100,8 +99,6 @@ export const theme = createTheme({
           textTransform: "none",
           fontSize: "0.875rem",
           boxShadow: "none",
-          // px: 2.25,
-          // py: 1,
 
           "&:hover": {
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",

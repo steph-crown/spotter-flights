@@ -10,38 +10,48 @@ import {
   useColorScheme,
   useMediaQuery,
 } from "@mui/material";
-import React from "react";
+import React, { useMemo } from "react";
 
 const HomePage: React.FC = () => {
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT_MAX_WIDTH);
   const { mode } = useColorScheme();
 
+  const HeroIllustration = useMemo(
+    () => (mode === "light" ? LightHeroIllustration : DarkHeroIllustration),
+    [mode]
+  );
+
+  const containerSx = useMemo(
+    () => ({
+      "&.MuiContainer-root": {
+        maxWidth: "960px",
+      },
+    }),
+    []
+  );
+
+  const illustrationProps = useMemo(
+    () => ({
+      style: { width: "100%", height: "max-content" },
+    }),
+    []
+  );
+
+  const titleVariant = useMemo(() => (isMobile ? "h4" : "h3"), [isMobile]);
+  const titleMarginTop = useMemo(() => (isMobile ? -2 : -4.5), [isMobile]);
+
   return (
     <Box>
       <Container maxWidth="lg">
-        {mode === "light" ? (
-          <LightHeroIllustration
-            style={{ width: "100%", height: "max-content" }}
-          />
-        ) : (
-          <DarkHeroIllustration
-            style={{ width: "100%", height: "max-content" }}
-          />
-        )}
+        <HeroIllustration {...illustrationProps} />
       </Container>
 
-      <Container
-        sx={{
-          "&.MuiContainer-root ": {
-            maxWidth: "960px",
-          },
-        }}
-      >
+      <Container sx={containerSx}>
         <Typography
-          variant={isMobile ? "h4" : "h3"}
+          variant={titleVariant}
           fontWeight={500}
-          textAlign={"center"}
-          mt={isMobile ? -2 : -4.5}
+          textAlign="center"
+          mt={titleMarginTop}
           mb={5}
         >
           Flights

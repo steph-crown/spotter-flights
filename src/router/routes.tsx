@@ -3,7 +3,6 @@ import type { RouteObject } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Lazy load components
 const HomePage: LazyExoticComponent<React.FC> = lazy(
   () => import("../pages/HomePage")
 );

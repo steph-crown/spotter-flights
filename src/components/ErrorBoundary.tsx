@@ -23,14 +23,10 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.log("meeee", error);
-
     this.setState({
       error,
       errorInfo,
     });
-
-    console.error("Error caught by boundary:", error, errorInfo);
   }
 
   private handleReset = (): void => {
@@ -62,7 +58,7 @@ class ErrorBoundary extends Component<Props, State> {
                   textAlign: "left",
                   mb: 3,
                   p: 2,
-                  bgcolor: "grey.100",
+                  bgcolor: "grey.50",
                   borderRadius: 1,
                 }}
               >

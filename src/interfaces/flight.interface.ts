@@ -98,8 +98,8 @@ export interface FlightSearchRequest {
   destinationSkyId: string;
   originEntityId: string;
   destinationEntityId: string;
-  date: string; // YYYY-MM-DD format
-  returnDate?: string; // YYYY-MM-DD format for round trip
+  date: string;
+  returnDate?: string;
   cabinClass: "economy" | "premium_economy" | "business" | "first";
   adults: number;
   children?: number;
@@ -151,8 +151,8 @@ export interface IFlightLeg {
   durationInMinutes: number;
   stopCount: number;
   isSmallestStops: boolean;
-  departure: string; // ISO datetime
-  arrival: string; // ISO datetime
+  departure: string;
+  arrival: string;
   timeDeltaInDays: number;
   carriers: IFlightCarrier;
   segments: IFlightSegment[];

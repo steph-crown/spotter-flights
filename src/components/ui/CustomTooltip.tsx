@@ -5,7 +5,6 @@ interface CustomTooltipProps extends Omit<TooltipProps, "children"> {
   children: ReactElement;
 }
 
-// Reusable tooltip wrapper with consistent styling
 export const CustomTooltip = ({
   children,
   title,
@@ -30,16 +29,7 @@ export const CustomTooltip = ({
       }}
       {...props}
     >
-      {cloneElement(
-        children
-
-        // , {
-        //   style: {
-        //     cursor: "help",
-        //     ...children.props.style,
-        //   },
-        // }
-      )}
+      {cloneElement(children)}
     </Tooltip>
   );
 };
