@@ -1,8 +1,13 @@
 import { FilterBar } from "@/components/filters/FilterBar";
 import { FlightResults } from "@/components/flights/FlightResults";
-import { useAppSelector } from "@/hooks/redux";
+import { LoadingProgressBar } from "@/components/loaders";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import type { IFlightSearchRequest } from "@/interfaces/flight.interface";
 import { useLazySearchFlightsQuery } from "@/services/flight.service";
+import {
+  selectFlightSearch,
+  setSortBy,
+} from "@/store/slices/flightSearch.slice";
 import { spotterBrand } from "@/theme";
 import {
   Alert,
@@ -12,35 +17,20 @@ import {
   Container,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ExplorePage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeSort, setActiveSort] = useState("price_high");
-  const flightSearch = useAppSelector((state) => state.flightSearch);
+  const flightSearch = useAppSelector(selectFlightSearch);
+  const dispatch = useAppDispatch();
 
-  const [searchFlights, { data: flightResults, isLoading, isError }] =
-    useLazySearchFlightsQuery();
+  const [
+    searchFlights,
+    { data: flightResults, isLoading, isFetching, isError },
+  ] = useLazySearchFlightsQuery();
 
-  console.log({ flightResults });
-
-  // Trigger search when component mounts or search params change
-  useEffect(() => {
-    const shouldSearch =
-      flightSearch.origin &&
-      flightSearch.destination &&
-      flightSearch.departureDate;
-
-    if (shouldSearch) {
-      performFlightSearch();
-    } else {
-      // Redirect to home if required parameters are missing
-      // navigate("/", { replace: true });
-    }
-  }, [flightSearch, navigate]);
-
-  const performFlightSearch = () => {
+  const performFlightSearch = useCallback(() => {
     if (
       !flightSearch.origin ||
       !flightSearch.destination ||
@@ -48,6 +38,8 @@ const ExplorePage: React.FC = () => {
     ) {
       return;
     }
+
+    console.log({ flightSearch });
 
     const searchRequest: IFlightSearchRequest = {
       originSkyId: flightSearch.origin.skyId || flightSearch.origin.code,
@@ -66,16 +58,36 @@ const ExplorePage: React.FC = () => {
       infants:
         flightSearch.passengers.infantsInSeat +
         flightSearch.passengers.infantsOnLap,
-      sortBy: "best",
+      sortBy: flightSearch.sortBy,
       limit: 50,
+      market: flightSearch.market,
+      currency: flightSearch.currency,
+      countryCode: flightSearch.countryCode,
     };
 
     searchFlights(searchRequest);
-  };
+  }, [flightSearch, searchFlights]);
+
+  // Trigger search when component mounts or search params change
+  useEffect(() => {
+    const shouldSearch =
+      flightSearch.origin &&
+      flightSearch.destination &&
+      flightSearch.departureDate;
+
+    if (shouldSearch) {
+      performFlightSearch();
+    }
+  }, [flightSearch, navigate, performFlightSearch]);
 
   const formatDateForAPI = (date: Date): string => {
-    return date.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
+
+  console.log({ fififir: isLoading, isFetching });
 
   const baseSortCardSx = {
     cursor: "pointer",
@@ -98,92 +110,92 @@ const ExplorePage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "background.default" }}>
-      <Container
-        sx={{
-          py: 2,
-          pt: 4,
-          "&.MuiContainer-root ": {
-            maxWidth: "1024px",
-          },
-        }}
-      >
-        <FilterBar hideSearchButton={true} />
-      </Container>
+    <>
+      <LoadingProgressBar isLoading={isLoading || isFetching} />
 
-      {/* Desktop Content */}
-      <Container
-        sx={{
-          "&.MuiContainer-root ": {
-            maxWidth: "1024px",
-          },
-        }}
-      >
-        <Box>
-          {/* {getSearchSummary()} */}
+      <Box sx={{ minHeight: "100vh", backgroundColor: "background.default" }}>
+        <Container
+          sx={{
+            py: 2,
+            pt: 4,
+            "&.MuiContainer-root ": {
+              maxWidth: "1024px",
+            },
+          }}
+        >
+          <FilterBar hideSearchButton={true} />
+        </Container>
 
-          {/* Sort Options */}
-          <Box sx={{ display: "flex", mb: 2 }}>
-            <Box
-              sx={{
-                ...baseSortCardSx,
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-                ...(activeSort === "best" ? activeSortCardSx : {}),
-              }}
-              onClick={() => {
-                setActiveSort("best");
-              }}
-            >
-              <Typography
-                variant="body1"
-                color="primary"
-                sx={{ fontWeight: "medium" }}
+        {/* Desktop Content */}
+        <Container
+          sx={{
+            "&.MuiContainer-root ": {
+              maxWidth: "1024px",
+            },
+          }}
+        >
+          <Box>
+            <Box sx={{ display: "flex", mb: 2 }}>
+              <Box
+                sx={{
+                  ...baseSortCardSx,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
+                  ...(flightSearch.sortBy === "best" ? activeSortCardSx : {}),
+                }}
+                onClick={() => {
+                  dispatch(setSortBy("best"));
+                }}
               >
-                Best
-              </Typography>
+                <Typography
+                  variant="body1"
+                  color="primary"
+                  sx={{ fontWeight: "medium" }}
+                >
+                  Best
+                </Typography>
+              </Box>
+
+              <Box
+                component={Button}
+                sx={{
+                  ...baseSortCardSx,
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
+                  ...(flightSearch.sortBy === "price_high"
+                    ? activeSortCardSx
+                    : {}),
+                  gap: 1,
+                }}
+                onClick={() => {
+                  dispatch(setSortBy("price_high"));
+                }}
+              >
+                <Typography variant="body1" sx={{ fontWeight: "medium" }}>
+                  Most Expensive{" "}
+                </Typography>
+              </Box>
             </Box>
 
-            <Box
-              component={Button}
-              sx={{
-                ...baseSortCardSx,
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-                ...(activeSort === "price_high" ? activeSortCardSx : {}),
-                gap: 1,
-              }}
-              onClick={() => {
-                setActiveSort("price_high");
-              }}
-            >
-              <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-                Cheapest{" "}
-              </Typography>
-              {/* <Typography variant="caption" color="text.secondary">
-                from NGN 2,958,026
-              </Typography> */}
-            </Box>
+            {isLoading && (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                <CircularProgress />
+              </Box>
+            )}
+
+            {isError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Error searching for flights. Please try again.
+              </Alert>
+            )}
+
+            {flightResults && (
+              <FlightResults results={flightResults} isLoading={isLoading} />
+            )}
           </Box>
-
-          {isLoading && (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <CircularProgress />
-            </Box>
-          )}
-
-          {isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              Error searching for flights. Please try again.
-            </Alert>
-          )}
-
-          {flightResults && (
-            <FlightResults results={flightResults} isLoading={isLoading} />
-          )}
-        </Box>
-      </Container>
-    </Box>
+        </Container>
+      </Box>
+    </>
   );
 };
 

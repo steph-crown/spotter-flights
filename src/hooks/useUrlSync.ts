@@ -6,6 +6,7 @@ import type {
   IFlightSearchState,
   ILocation,
   IPassengerCounts,
+  SortByOption,
 } from "@/interfaces/flight.interface";
 
 export const useUrlSync = () => {
@@ -23,6 +24,10 @@ export const useUrlSync = () => {
     }
     if (flightSearch.classType !== "economy") {
       params.set("class", flightSearch.classType);
+    }
+
+    if (flightSearch.sortBy !== "best") {
+      params.set("sortBy", flightSearch.sortBy);
     }
 
     // Passengers (only if different from default)
@@ -79,9 +84,12 @@ export const useUrlSync = () => {
     const tripType =
       (searchParams.get("tripType") as IFlightSearchState["tripType"]) ||
       "round_trip";
+
     const classType =
       (searchParams.get("class") as IFlightSearchState["classType"]) ||
       "economy";
+
+    const sortBy = (searchParams.get("sortBy") as SortByOption) || "best";
 
     let passengers: IPassengerCounts = {
       adults: 1,
@@ -146,6 +154,7 @@ export const useUrlSync = () => {
         origin,
         destination,
         departureDate,
+        sortBy,
         returnDate: tripType === "round_trip" ? returnDate : null,
       })
     );

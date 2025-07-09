@@ -1,23 +1,23 @@
-import { CalendarToday } from "@mui/icons-material";
-import {
-  Box,
-  FormControl,
-  InputAdornment,
-  TextField,
-  Popover,
-  Typography,
-  Button,
-  Divider,
-  useMediaQuery,
-} from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { useState } from "react";
 import {
   MOBILE_BREAKPOINT_MAX_WIDTH,
   SMALLER_MOBILE_BREAKPOINT_MAX_WIDTH,
 } from "@/constants/ui.constants";
+import { CalendarToday } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Divider,
+  FormControl,
+  InputAdornment,
+  Popover,
+  TextField,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { useState } from "react";
 
 interface CombinedDateSelectorProps {
   departureDate: Date | null;
@@ -37,9 +37,7 @@ export function CombinedDateSelector({
   ariaLabel = "Select dates",
 }: CombinedDateSelectorProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [activeField, setActiveField] = useState<"departure" | "return">(
-    "departure"
-  );
+
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT_MAX_WIDTH);
   const isSmallerMobile = useMediaQuery(SMALLER_MOBILE_BREAKPOINT_MAX_WIDTH);
 
@@ -166,101 +164,143 @@ export function CombinedDateSelector({
         <Box sx={{ p: 3 }}>
           {tripType === "round_trip" ? (
             <Box>
-              {/* Date Selection Tabs */}
-              {isMobile && (
-                <Box sx={{ display: "flex", mb: 2 }}>
-                  <Button
-                    onClick={() => setActiveField("departure")}
-                    variant={
-                      activeField === "departure" ? "contained" : "outlined"
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flexDirection: isMobile ? "column" : "row",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Box
+                    display="flex"
+                    alignItems={"center"}
+                    justifyContent={
+                      departureDate ? "space-between" : "flex-start"
                     }
-                    sx={{
-                      flex: 1,
-                      mr: 1,
-                      textTransform: "none",
-                      fontSize: "0.875rem",
-                    }}
                   >
-                    Departure
-                  </Button>
-                  <Button
-                    onClick={() => setActiveField("return")}
-                    variant={
-                      activeField === "return" ? "contained" : "outlined"
-                    }
-                    sx={{
-                      flex: 1,
-                      ml: 1,
-                      textTransform: "none",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    Return
-                  </Button>
-                </Box>
-              )}
-
-              {/* Date Pickers */}
-              {isMobile ? (
-                <Box>
-                  {activeField === "departure" ? (
-                    <DatePicker
-                      value={departureDate}
-                      onChange={onDepartureDateChange}
-                      minDate={new Date()}
-                      sx={{ width: "100%" }}
-                    />
-                  ) : (
-                    <DatePicker
-                      value={returnDate}
-                      onChange={onReturnDateChange}
-                      minDate={departureDate || new Date()}
-                      sx={{ width: "100%" }}
-                    />
-                  )}
-                </Box>
-              ) : (
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Box sx={{ flex: 1 }}>
                     <Typography
                       variant="subtitle2"
                       sx={{ mb: 1, color: "text.secondary" }}
                     >
                       Departure
                     </Typography>
-                    <DatePicker
-                      value={departureDate}
-                      onChange={onDepartureDateChange}
-                      minDate={new Date()}
-                      sx={{ width: "100%" }}
-                    />
+
+                    {departureDate ? (
+                      <Button
+                        variant="text"
+                        sx={{
+                          pr: 0,
+                          pl: 0,
+                          py: 0,
+                          minWidth: "unset",
+                          "&:hover": {
+                            background: "transparent",
+                            boxShadow: "none",
+                          },
+                        }}
+                        onClick={() => {
+                          onDepartureDateChange(null);
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    ) : null}
                   </Box>
-                  <Divider orientation="vertical" flexItem />
-                  <Box sx={{ flex: 1 }}>
+
+                  <DatePicker
+                    value={departureDate}
+                    onChange={onDepartureDateChange}
+                    minDate={new Date()}
+                    sx={{ width: "100%" }}
+                  />
+                </Box>
+
+                <Divider
+                  orientation={isMobile ? "horizontal" : "vertical"}
+                  flexItem
+                />
+
+                <Box sx={{ flex: 1 }}>
+                  <Box
+                    display="flex"
+                    alignItems={"center"}
+                    justifyContent={returnDate ? "space-between" : "flex-start"}
+                  >
                     <Typography
                       variant="subtitle2"
                       sx={{ mb: 1, color: "text.secondary" }}
                     >
                       Return
                     </Typography>
-                    <DatePicker
-                      value={returnDate}
-                      onChange={onReturnDateChange}
-                      minDate={departureDate || new Date()}
-                      sx={{ width: "100%" }}
-                    />
+
+                    {returnDate ? (
+                      <Button
+                        variant="text"
+                        sx={{
+                          pr: 0,
+                          pl: 0,
+                          py: 0,
+                          minWidth: "unset",
+                          "&:hover": {
+                            background: "transparent",
+                            boxShadow: "none",
+                          },
+                        }}
+                        onClick={() => {
+                          onReturnDateChange(null);
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    ) : null}
                   </Box>
+
+                  <DatePicker
+                    value={returnDate}
+                    onChange={onReturnDateChange}
+                    minDate={departureDate || new Date()}
+                    sx={{ width: "100%" }}
+                  />
                 </Box>
-              )}
+              </Box>
             </Box>
           ) : (
-            <Box>
-              <Typography
-                variant="subtitle2"
-                sx={{ mb: 1, color: "text.secondary" }}
+            <Box sx={{ flex: 1 }}>
+              <Box
+                display="flex"
+                alignItems={"center"}
+                justifyContent={departureDate ? "space-between" : "flex-start"}
               >
-                Departure
-              </Typography>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ mb: 1, color: "text.secondary" }}
+                >
+                  Departure
+                </Typography>
+
+                {departureDate ? (
+                  <Button
+                    variant="text"
+                    sx={{
+                      pr: 0,
+                      pl: 0,
+                      py: 0,
+                      minWidth: "unset",
+                      "&:hover": {
+                        background: "transparent",
+                        boxShadow: "none",
+                      },
+                    }}
+                    onClick={() => {
+                      onDepartureDateChange(null);
+                    }}
+                  >
+                    Clear
+                  </Button>
+                ) : null}
+              </Box>
+
               <DatePicker
                 value={departureDate}
                 onChange={onDepartureDateChange}
@@ -274,7 +314,8 @@ export function CombinedDateSelector({
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
+              gap: 2,
               mt: 3,
               pt: 2,
               borderTop: "1px solid",
@@ -295,13 +336,13 @@ export function CombinedDateSelector({
             </Button>
 
             <Button
-              variant="text"
+              variant="contained"
               onClick={handleClose}
               sx={{
-                color: "primary.main",
+                // color: "primary.main",
                 fontWeight: "medium",
                 textTransform: "none",
-                fontSize: "1rem",
+                // fontSize: "1rem",
               }}
             >
               Done

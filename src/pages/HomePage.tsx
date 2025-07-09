@@ -1,6 +1,7 @@
 import DarkHeroIllustration from "@/assets/dark-hero-illustration.svg?react";
 import LightHeroIllustration from "@/assets/light-hero-illustration.svg?react";
 import { FilterBar } from "@/components/filters/FilterBar";
+import HomepageFooter from "@/components/HomePageFooter";
 import { MOBILE_BREAKPOINT_MAX_WIDTH } from "@/constants/ui.constants";
 import {
   Box,
@@ -48,6 +49,8 @@ const HomePage: React.FC = () => {
 
         <FilterBar />
       </Container>
+
+      <HomepageFooter />
     </Box>
   );
 };

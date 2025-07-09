@@ -1,8 +1,8 @@
 import type {
-  IFlightSearchParams,
   IFlightSearchState,
   ILocation,
   IPassengerCounts,
+  SortByOption,
 } from "@/interfaces/flight.interface";
 import type { RootState } from "@/store/store";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -17,11 +17,14 @@ const initialState: IFlightSearchState = {
     infantsOnLap: 0,
   },
   origin: null,
+  countryCode: "US",
+  market: "en-US",
+  currency: "USD",
   destination: null,
   departureDate: null,
   returnDate: null,
   isSearching: false,
-  lastSearchParams: null,
+  sortBy: "best",
 };
 
 const flightSearchSlice = createSlice({
@@ -76,11 +79,8 @@ const flightSearchSlice = createSlice({
       state.isSearching = action.payload;
     },
 
-    setLastSearchParams: (
-      state,
-      action: PayloadAction<IFlightSearchParams>
-    ) => {
-      state.lastSearchParams = action.payload;
+    setSortBy: (state, action: PayloadAction<SortByOption>) => {
+      state.sortBy = action.payload;
     },
 
     resetSearch: (state) => {
@@ -90,17 +90,36 @@ const flightSearchSlice = createSlice({
       };
     },
 
-    // Bulk update from URL params
     updateFromUrlParams: (
       state,
       action: PayloadAction<Partial<IFlightSearchState>>
     ) => {
       Object.assign(state, action.payload);
     },
+
+    setLocaleSettings: (
+      state,
+      action: PayloadAction<{
+        countryCode: string;
+        market: string;
+        currency: string;
+      }>
+    ) => {
+      state.countryCode = action.payload.countryCode;
+      state.market = action.payload.market;
+      state.currency = action.payload.currency;
+    },
   },
 });
 
 export const selectTripType = (state: RootState) => state.flightSearch.tripType;
+export const selectFlightSearch = (state: RootState) => state.flightSearch;
+export const selectSortBy = (state: RootState) => state.flightSearch.sortBy;
+export const selectLocaleSettings = (state: RootState) => ({
+  countryCode: state.flightSearch.countryCode,
+  market: state.flightSearch.market,
+  currency: state.flightSearch.currency,
+});
 
 export const {
   setTripType,
@@ -112,9 +131,10 @@ export const {
   setReturnDate,
   swapLocations,
   setSearching,
-  setLastSearchParams,
   resetSearch,
   updateFromUrlParams,
+  setSortBy,
+  setLocaleSettings,
 } = flightSearchSlice.actions;
 
 export default flightSearchSlice.reducer;

@@ -2,7 +2,13 @@ import type {
   IFlightSegment,
   IFlightStop,
 } from "@/interfaces/flight.interface";
-import { formatDuration, formatTime } from "@/utils/format.utils";
+import { CustomTooltip } from "@/components/ui/CustomTooltip";
+import {
+  formatDuration,
+  formatTime,
+  formatFullDateTime,
+  formatStopTooltip,
+} from "@/utils/format.utils";
 import FlightLandIcon from "@mui/icons-material/FlightLand";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import { Box, Chip, Typography } from "@mui/material";
@@ -27,9 +33,15 @@ export function FlightSegmentDetails({
           <FlightTakeoffIcon
             sx={{ fontSize: "1rem", color: "text.secondary" }}
           />
-          <Typography variant="body2" fontWeight="medium">
-            {formatTime(segment.departure)}
-          </Typography>
+          <CustomTooltip title={formatFullDateTime(segment.departure)}>
+            <Typography
+              variant="body2"
+              fontWeight="medium"
+              sx={{ cursor: "help" }}
+            >
+              {formatTime(segment.departure)}
+            </Typography>
+          </CustomTooltip>
           <Typography variant="body2" color="text.secondary">
             {segment.origin.displayCode}
           </Typography>
@@ -52,8 +64,6 @@ export function FlightSegmentDetails({
           size="small"
           variant="outlined"
           sx={{
-            // backgroundColor: spotterBrand.teal[100],
-            // color: "primary.main",
             fontSize: "0.75rem",
             fontWeight: "medium",
           }}
@@ -75,9 +85,15 @@ export function FlightSegmentDetails({
           <Typography variant="body2" color="text.secondary">
             {segment.destination.displayCode}
           </Typography>
-          <Typography variant="body2" fontWeight="medium">
-            {formatTime(segment.arrival)}
-          </Typography>
+          <CustomTooltip title={formatFullDateTime(segment.arrival)}>
+            <Typography
+              variant="body2"
+              fontWeight="medium"
+              sx={{ cursor: "help" }}
+            >
+              {formatTime(segment.arrival)}
+            </Typography>
+          </CustomTooltip>
           <FlightLandIcon sx={{ fontSize: "1rem", color: "text.secondary" }} />
         </Box>
       </Box>
@@ -98,7 +114,12 @@ export function FlightSegmentDetails({
             color="text.secondary"
             sx={{ fontSize: "0.75rem" }}
           >
-            {segment.marketingCarrier.name} •{" "}
+            <CustomTooltip title={segment.marketingCarrier.name}>
+              <span style={{ cursor: "help" }}>
+                {segment.marketingCarrier.name}
+              </span>
+            </CustomTooltip>
+            {" • "}
             {formatDuration(segment.durationInMinutes)}
           </Typography>
         </Box>
@@ -139,9 +160,31 @@ export function FlightSegmentDetails({
               sx={{ fontSize: "0.75rem" }}
             >
               Layover •{" "}
-              {stops.find((stop) => segment.destination.displayCode === stop.id)
-                ? formatDuration(totalStopMinutes || 0)
-                : "Connection time varies"}
+              {stops.find(
+                (stop) => segment.destination.displayCode === stop.id
+              ) ? (
+                <>
+                  {formatDuration(totalStopMinutes || 0)} in{" "}
+                  <CustomTooltip
+                    title={formatStopTooltip(
+                      stops.find(
+                        (stop) => segment.destination.displayCode === stop.id
+                      )!
+                    )}
+                  >
+                    <span
+                      style={{
+                        textDecoration: "underline dotted",
+                        cursor: "help",
+                      }}
+                    >
+                      {segment.destination.displayCode}
+                    </span>
+                  </CustomTooltip>
+                </>
+              ) : (
+                "Connection time varies"
+              )}
             </Typography>
           </Box>
         </Box>

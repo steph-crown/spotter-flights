@@ -1,18 +1,19 @@
 import { FlightSegmentDetails } from "@/components/flights/FlightSegmentDetails";
-import type { IFlightLeg } from "@/interfaces/flight.interface";
+import type { IFlightItinerary } from "@/interfaces/flight.interface";
 import { analyzeFlightStops, getSegmentLayover } from "@/utils/flight.utils";
 import { formatDuration } from "@/utils/format.utils";
-import { Box, Button, Collapse, Divider, Typography } from "@mui/material";
+import { Box, Collapse, Divider, Typography } from "@mui/material";
 
 type ExpandedFlightDetailsProps = {
-  flightLeg: IFlightLeg;
+  itinerary: IFlightItinerary;
   isExpanded: boolean;
 };
 
 export function ExpandedFlightDetails({
-  flightLeg,
+  itinerary,
   isExpanded,
 }: ExpandedFlightDetailsProps) {
+  const flightLeg = itinerary?.legs?.[0];
   const { stops } = analyzeFlightStops(flightLeg);
 
   return (
@@ -121,9 +122,9 @@ export function ExpandedFlightDetails({
             </Box>
           </Box>
 
-          <Button variant="outlined" sx={{ py: 1 }}>
+          {/* <Button variant="outlined" sx={{ py: 1 }}>
             Select flight
-          </Button>
+          </Button> */}
         </Box>
       </Box>
     </Collapse>

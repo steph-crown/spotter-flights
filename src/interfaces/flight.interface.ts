@@ -59,17 +59,10 @@ export interface IFlightSearchState {
   returnDate: string | null;
 
   isSearching: boolean;
-  lastSearchParams: IFlightSearchParams | null;
-}
-
-export interface IFlightSearchParams {
-  tripType: string;
-  classType: string;
-  passengers: IPassengerCounts;
-  origin: ILocation | null;
-  destination: ILocation | null;
-  departureDate: string | null;
-  returnDate: string | null;
+  sortBy: SortByOption;
+  countryCode: string;
+  market: string;
+  currency: string;
 }
 
 export interface IFlightSearchFilters {
@@ -270,3 +263,12 @@ export interface IFlightStop {
   type: string | undefined;
   country: string;
 }
+
+export type SortByOption =
+  | "best"
+  | "price_high"
+  | "fastest"
+  | "outbound_take_off_time"
+  | "outbound_landing_time"
+  | "return_take_off_time"
+  | "return_landing_time";

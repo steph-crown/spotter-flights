@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { spotterBrand } from "@/theme";
 import { ArrowBack, LocationOn } from "@mui/icons-material";
 import {
@@ -44,9 +44,21 @@ export function LocationSelector({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const open = Boolean(anchorEl);
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT_MAX_WIDTH);
   const isSmallerMobile = useMediaQuery(SMALLER_MOBILE_BREAKPOINT_MAX_WIDTH);
+
+  // Auto-focus the input when popover opens
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (open && inputRef.current) {
+        inputRef.current?.focus();
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [open]);
 
   // Debounce search query
   useEffect(() => {
@@ -217,8 +229,8 @@ export function LocationSelector({
                 fullWidth
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Where ${placeholder}`}
-                autoFocus
+                placeholder={placeholder}
+                inputRef={inputRef}
                 variant="standard"
                 sx={{
                   "& .MuiInput-root::before": {
@@ -244,8 +256,8 @@ export function LocationSelector({
                 fullWidth
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Where ${placeholder}`}
-                autoFocus
+                placeholder={placeholder}
+                inputRef={inputRef}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment
@@ -334,6 +346,9 @@ export function LocationSelector({
                   <ListItemText
                     primary="Start typing to search"
                     secondary="Enter at least 2 characters"
+                    onClick={() => {
+                      inputRef.current?.focus();
+                    }}
                     sx={{
                       "& .MuiTypography-body2": {
                         fontSize: "0.75rem",
@@ -350,7 +365,8 @@ export function LocationSelector({
                   sx={{
                     cursor: "pointer",
                     py: 0,
-                    px: isMobile ? 0 : 2,
+                    // px: isMobile ? 0 : 2,
+                    px: 2,
                     "&:hover": {
                       backgroundColor: "text.primaryChannel",
                     },

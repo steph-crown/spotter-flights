@@ -1,10 +1,14 @@
+import { SortMenu } from "@/components/filters";
 import { FlightItinerary } from "@/components/flights/FlightItinerary";
+import { BlockLoader } from "@/components/loaders";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import type {
   IFlightItinerary,
   IFlightSearchResponse,
+  SortByOption,
 } from "@/interfaces/flight.interface";
-import SwapVertIcon from "@mui/icons-material/SwapVert";
-import { Box, Button, Paper, Typography, useMediaQuery } from "@mui/material";
+import { selectSortBy, setSortBy } from "@/store/slices/flightSearch.slice";
+import { Box, Typography, useMediaQuery } from "@mui/material";
 import React from "react";
 
 interface FlightResultsProps {
@@ -17,21 +21,33 @@ export const FlightResults: React.FC<FlightResultsProps> = ({
   isLoading,
 }) => {
   const isSmallMobile = useMediaQuery("(max-width:475px)");
+  const currentSort = useAppSelector(selectSortBy);
+  const dispatch = useAppDispatch();
+
+  const handleSortChange = (sortBy: SortByOption) => {
+    dispatch(setSortBy(sortBy));
+  };
 
   if (isLoading) {
-    return <Typography>Loading flights...</Typography>;
+    return <BlockLoader message="Loading flights ..." />;
   }
 
   if (!results?.data?.itineraries?.length) {
     return (
-      <Paper sx={{ p: 3, textAlign: "center" }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          No flights found
+      <Box sx={{ textAlign: "center", mt: 8 }}>
+        <Typography
+          variant="body1"
+          fontWeight={600}
+          fontSize={20}
+          sx={{ mb: 1 }}
+        >
+          No options matching your search
         </Typography>
-        <Typography color="text.secondary">
-          Try adjusting your search criteria
+
+        <Typography variant="body2" color="text.secondary">
+          Try changing your dates or destination to see results
         </Typography>
-      </Paper>
+      </Box>
     );
   }
 
@@ -51,14 +67,11 @@ export const FlightResults: React.FC<FlightResultsProps> = ({
           </Typography>
         </Box>
 
-        <Button
-          variant="text"
-          color="primary"
-          sx={{ paddingRight: 2, paddingLeft: 2 }}
-          size="small"
-        >
-          {!isSmallMobile && <>Sorted by</>} Price <SwapVertIcon />
-        </Button>
+        <SortMenu
+          currentSort={currentSort}
+          onSortChange={handleSortChange}
+          isSmallMobile={isSmallMobile}
+        />
       </Box>
 
       <Box

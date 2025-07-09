@@ -53,6 +53,9 @@ export const theme = createTheme({
           primaryChannel: spotterBrand.gray[200],
           secondaryChannel: spotterBrand.gray[400],
         },
+        grey: {
+          50: spotterBrand.gray[100],
+        },
       },
     },
     dark: {
@@ -74,6 +77,9 @@ export const theme = createTheme({
           disabled: spotterBrand.gray[300],
           primaryChannel: spotterBrand.gray[600],
         },
+        grey: {
+          50: spotterBrand.neutral.black,
+        },
       },
     },
   },
@@ -92,7 +98,11 @@ export const theme = createTheme({
           padding: "0.5rem 1.5rem",
           fontWeight: 500,
           textTransform: "none",
+          fontSize: "0.875rem",
           boxShadow: "none",
+          // px: 2.25,
+          // py: 1,
+
           "&:hover": {
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           },

@@ -1,23 +1,22 @@
 import AppRouter from "@/router/Router";
+import { store } from "@/store/store";
 import { theme } from "@/theme";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
-import "./App.css";
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { Provider } from "react-redux";
-import { store } from "@/store/store";
+import "./App.css";
+import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
 
 function App() {
   return (
-    <ErrorBoundary>
-      <Provider store={store}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline enableColorScheme />
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline enableColorScheme />
+        <NetworkStatusBanner />
 
-          <AppRouter />
-        </ThemeProvider>
-      </Provider>
-    </ErrorBoundary>
+        <AppRouter />
+      </ThemeProvider>
+    </Provider>
   );
 }
 

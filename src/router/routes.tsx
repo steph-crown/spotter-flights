@@ -1,6 +1,7 @@
 import React, { lazy, type LazyExoticComponent } from "react";
 import type { RouteObject } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Lazy load components
 const HomePage: LazyExoticComponent<React.FC> = lazy(
@@ -22,11 +23,19 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: (
+          <ErrorBoundary>
+            <HomePage />
+          </ErrorBoundary>
+        ),
       },
       {
         path: "/explore",
-        element: <ExplorePage />,
+        element: (
+          <ErrorBoundary>
+            <ExplorePage />
+          </ErrorBoundary>
+        ),
       },
     ],
   },

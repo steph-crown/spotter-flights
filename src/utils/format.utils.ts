@@ -19,10 +19,43 @@ export const formatTime = (dateString: string): string => {
   });
 };
 
-export const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "NGN",
+export const formatPrice = (
+  price: number,
+  locale: string,
+  currency: string
+): string => {
+  const amount = new Intl.NumberFormat(locale, {
+    style: "decimal",
+    currency: currency,
     minimumFractionDigits: 0,
+    currencyDisplay: "code",
   }).format(price);
+
+  return `${currency} ${amount}`;
+};
+
+export const formatFullDateTime = (isoString: string): string => {
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(date);
+};
+
+export const formatStopTooltip = (stop: {
+  name: string;
+  type?: string;
+  country: string;
+}): string => {
+  const parts = [stop.name];
+  if (stop.type) {
+    parts.push(stop.type);
+  }
+  parts.push(stop.country);
+  return parts.join(", ");
 };

@@ -18,7 +18,6 @@ import {
   setClassType,
   setDepartureDate,
   setDestination,
-  setLastSearchParams,
   setOrigin,
   setPassengers,
   setReturnDate,
@@ -89,6 +88,7 @@ export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
 
   // Update URL whenever state changes
   useEffect(() => {
+    console.log("calleddddd");
     updateUrlFromState();
   }, [
     flightSearch.tripType,
@@ -98,6 +98,7 @@ export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
     flightSearch.destination,
     flightSearch.departureDate,
     flightSearch.returnDate,
+    flightSearch.sortBy,
     updateUrlFromState,
   ]);
 
@@ -122,6 +123,7 @@ export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
   };
 
   const handleDepartureDateChange = (date: Date | null) => {
+    console.log({ difference: date });
     dispatch(setDepartureDate(date ? date.toISOString() : null));
   };
 
@@ -134,34 +136,7 @@ export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
   };
 
   const handleSearch = () => {
-    // Validate required fields
-    // if (
-    //   !flightSearch.origin ||
-    //   !flightSearch.destination ||
-    //   !flightSearch.departureDate
-    // ) {
-    //   // You can add toast notification here
-    //   console.warn("Please fill in all required fields");
-    //   return;
-    // }
-
-    // Set searching state and save search params
     dispatch(setSearching(true));
-    dispatch(
-      setLastSearchParams({
-        tripType: flightSearch.tripType,
-        classType: flightSearch.classType,
-        passengers: flightSearch.passengers,
-        origin: flightSearch.origin,
-        destination: flightSearch.destination,
-        departureDate: flightSearch.departureDate,
-        returnDate: flightSearch.returnDate,
-      })
-    );
-
-    // Here you would typically navigate to results page or trigger search
-    // For now, we'll just log the search
-    console.log("Searching with params:", flightSearch);
 
     navigate("/explore");
 
@@ -178,8 +153,6 @@ export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
   const returnDate = flightSearch.returnDate
     ? new Date(flightSearch.returnDate)
     : null;
-
-  console.log({ hideSearchButton });
 
   return (
     <Paper
@@ -229,7 +202,7 @@ export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
             <LocationSelector
               value={flightSearch.origin}
               onChange={handleOriginChange}
-              placeholder="From"
+              placeholder="Where from?"
               icon={<FlightTakeoff sx={{ color: "text.secondary" }} />}
               ariaLabel="Select origin"
             />
@@ -241,7 +214,7 @@ export function FilterBar({ hideSearchButton = false }: FilterBarProps) {
             <LocationSelector
               value={flightSearch.destination}
               onChange={handleDestinationChange}
-              placeholder="To"
+              placeholder="Where to?"
               icon={<FlightLand sx={{ color: "text.secondary" }} />}
               ariaLabel="Select destination"
             />

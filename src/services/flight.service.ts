@@ -3,6 +3,7 @@ import type {
   IFlightSearchResponse,
   ISearchAirportsResponse,
 } from "@/interfaces/flight.interface";
+import type { IGetConfigResponse } from "@/interfaces/locale.interface";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const flightService = createApi({
@@ -15,8 +16,16 @@ export const flightService = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Airport", "FlightSearch"],
+  tagTypes: ["Airport", "FlightSearch", "Config"],
   endpoints: (builder) => ({
+    getConfig: builder.query<IGetConfigResponse, void>({
+      query: () => ({
+        url: "/v1/getConfig",
+      }),
+      providesTags: ["Config"],
+      keepUnusedDataFor: 3600,
+    }),
+
     searchAirports: builder.query<
       ISearchAirportsResponse,
       { query: string; locale?: string }
@@ -54,12 +63,14 @@ export const flightService = createApi({
         },
       }),
       providesTags: ["FlightSearch"],
-      keepUnusedDataFor: 300, // 5 minutes cache for flight searches
+      keepUnusedDataFor: 300,
     }),
   }),
 });
 
 export const {
+  useGetConfigQuery,
+  useLazyGetConfigQuery,
   useSearchAirportsQuery,
   useLazySearchAirportsQuery,
   useSearchFlightsQuery,
